@@ -41,9 +41,45 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title={product.name} />
-      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-5">
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-          <Card>
+           <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Product Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-lg">
+                        <Image src={product.imageUrl} alt={product.name} fill objectFit="cover" data-ai-hint={product.imageHint} />
+                    </div>
+                     <div className="grid gap-2">
+                        <div className="text-xl font-bold">{product.name}</div>
+                        <p className="text-sm text-muted-foreground">{product.description}</p>
+                     </div>
+                    <Separator />
+                     <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="col-span-2 font-medium text-muted-foreground">Current Price</div>
+                        <div className="col-span-2 text-3xl font-bold text-primary">₹{product.currentPrice.toFixed(2)}</div>
+                        
+                        <div className="font-medium text-muted-foreground">Category</div>
+                        <div><Badge variant="outline">{product.category}</Badge></div>
+
+                        <div className="font-medium text-muted-foreground">Cost</div>
+                        <div>₹{product.cost.toFixed(2)}</div>
+                        
+                        <div className="font-medium text-muted-foreground">Inventory</div>
+                        <div>{product.inventory} units</div>
+
+                        <div className="font-medium text-muted-foreground">Target Margin</div>
+                        <div>{product.targetMargin}%</div>
+
+                         <div className="font-medium text-muted-foreground">Price Range</div>
+                        <div>₹{product.minPrice.toFixed(2)} - ₹{product.maxPrice.toFixed(2)}</div>
+                     </div>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-3">
+           <Card>
             <CardHeader>
                 <CardTitle className="font-headline">Price History</CardTitle>
                 <CardDescription>Last 30 days of price adjustments.</CardDescription>
@@ -62,56 +98,29 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   <TableRow>
                     <TableHead>Competitor</TableHead>
                     <TableHead>Price</TableHead>
-                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="text-right">Difference</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productCompetitors?.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.competitor}</TableCell>
-                      <TableCell>₹{c.price.toFixed(2)}</TableCell>
-                      <TableCell>{new Date(c.lastUpdated).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
+                  {productCompetitors?.map((c) => {
+                    const priceDiff = product.currentPrice - c.price;
+                    const diffColor = priceDiff > 0 ? 'text-green-600' : priceDiff < 0 ? 'text-red-500' : 'text-muted-foreground';
+                    const diffSign = priceDiff > 0 ? '+' : '';
+
+                    return (
+                        <TableRow key={c.id}>
+                        <TableCell className="font-medium">{c.competitor}</TableCell>
+                        <TableCell>₹{c.price.toFixed(2)}</TableCell>
+                        <TableCell className={`text-right font-medium ${diffColor}`}>
+                            {diffSign}₹{priceDiff.toFixed(2)}
+                        </TableCell>
+                        </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
-        </div>
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">Product Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="relative aspect-video w-full">
-                        <Image src={product.imageUrl} alt={product.name} fill objectFit="cover" className="rounded-lg" data-ai-hint={product.imageHint} />
-                    </div>
-                     <div className="grid gap-2">
-                        <div className="text-lg font-bold">{product.name}</div>
-                     </div>
-                    <Separator />
-                     <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="font-medium text-muted-foreground">Category</div>
-                        <div><Badge variant="outline">{product.category}</Badge></div>
-
-                        <div className="font-medium text-muted-foreground">Current Price</div>
-                        <div className="font-bold">₹{product.currentPrice.toFixed(2)}</div>
-                        
-                        <div className="font-medium text-muted-foreground">Cost</div>
-                        <div>₹{product.cost.toFixed(2)}</div>
-                        
-                        <div className="font-medium text-muted-foreground">Inventory</div>
-                        <div>{product.inventory} units</div>
-
-                        <div className="font-medium text-muted-foreground">Target Margin</div>
-                        <div>{product.targetMargin}%</div>
-
-                         <div className="font-medium text-muted-foreground">Price Range</div>
-                        <div>₹{product.minPrice.toFixed(2)} - ₹{product.maxPrice.toFixed(2)}</div>
-                     </div>
-                </CardContent>
-            </Card>
         </div>
       </main>
     </div>
