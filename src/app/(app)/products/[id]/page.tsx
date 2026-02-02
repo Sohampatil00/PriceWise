@@ -1,5 +1,4 @@
 'use client';
-import { use } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Header } from '@/components/layout/header';
@@ -14,7 +13,7 @@ import type { Product, CompetitorPrice, PriceHistory } from '@/lib/types';
 import { useMemoFirebase } from '@/firebase/provider';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const { id } = use(params as any);
+  const { id } = params;
   const firestore = useFirestore();
 
   const productRef = useMemoFirebase(() => doc(firestore, 'products', id), [firestore, id]);
