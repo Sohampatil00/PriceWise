@@ -10,7 +10,7 @@
  * Data Structure: The data is organized around a central 'products' collection.
  * Each product can have related data stored in subcollections like
  * 'competitorPrices', 'demandPredictions', and 'abTests'. A top-level
- * collection 'priceOptimizationRules' holds global configuration.
+ * collection 'priceOptimizationRules' and 'experiments' hold global configuration.
  *
  * Key Security Decisions:
  * - Authenticated Access: All read and write operations are permitted for any
@@ -138,6 +138,19 @@ service cloud.firestore {
       allow create: if isSignedIn() && hasValidProductIdOnCreate(productId);
       allow update: if isSignedIn() && isExistingDoc() && isProductIdImmutable();
       allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Manages A/B test experiments for products.
+     * @path        /experiments/{experimentId}
+     * @allow       (read) A signed-in user can read experiment data.
+     * @allow       (write) A signed-in user can create, update, and delete experiments.
+     * @principle   Grants broad access to any authenticated user for rapid prototyping.
+     */
+    match /experiments/{experimentId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && isExistingDoc();
     }
 
     /**
