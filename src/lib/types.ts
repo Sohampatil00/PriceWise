@@ -18,7 +18,7 @@ export interface Product {
 export interface CompetitorPrice {
   id: string;
   productId: string;
-  competitor: 'Amazon' | 'Walmart' | 'BestBuy' | 'Target';
+  competitor: 'Amazon' | 'Flipkart' | 'BigBasket' | 'Nykaa' | 'Reliance';
   price: number;
   lastUpdated: string;
 }

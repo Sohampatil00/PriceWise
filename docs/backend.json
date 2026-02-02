@@ -4,11 +4,11 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Product",
       "type": "object",
-      "description": "Represents a product in the e-commerce system.",
+      "description": "Represents a product in the e-commerce system, tailored for the Indian market.",
       "properties": {
         "id": { "type": "string", "description": "Unique identifier for the product." },
         "name": { "type": "string", "description": "Name of the product." },
-        "category": { "type": "string", "description": "Category of the product." },
+        "category": { "type": "string", "description": "Category of the product (e.g., 'Groceries', 'Personal Care')." },
         "cost": { "type": "number", "description": "Cost of the product in Rupees." },
         "currentPrice": { "type": "number", "description": "Current selling price of the product in Rupees." },
         "minPrice": { "type": "number", "description": "Minimum allowable price for the product in Rupees." },
@@ -17,7 +17,7 @@
         "inventory": { "type": "number", "description": "Current inventory level of the product." },
         "salesLast30d": { "type": "number", "description": "Number of sales in the last 30 days." },
         "imageUrl": { "type": "string", "description": "URL of the product image." },
-        "imageHint": { "type": "string", "description": "Hint for AI image generation." },
+        "imageHint": { "type": "string", "description": "Hint for AI image generation (e.g., 'wheat flour')." },
         "description": { "type": "string", "description": "A detailed description of the product." },
         "isEssential": { "type": "boolean", "description": "Indicates if the product is an essential good." }
       },
@@ -31,7 +31,11 @@
       "properties": {
         "id": { "type": "string", "description": "Unique identifier for the competitor price." },
         "productId": { "type": "string", "description": "Reference to Product." },
-        "competitor": { "type": "string", "description": "Name of the competitor." },
+        "competitor": { 
+          "type": "string", 
+          "description": "Name of the competitor.",
+          "enum": ["Amazon", "Flipkart", "BigBasket", "Nykaa", "Reliance"]
+        },
         "price": { "type": "number", "description": "Competitor's price for the product in Rupees." },
         "lastUpdated": { "type": "string", "description": "Timestamp of the last price update.", "format": "date-time" }
       },
@@ -95,33 +99,7 @@
             "controlUnitsSold": { "type": "number" },
             "experimentUnitsSold": { "type": "number" }
         },
-        "required": ["id", "name", "productId", "status", "startDate", "endDate", "controlPrice", "experimentPrice", "controlRevenue", "experimentRevenue", "controlUnitsSold", "experimentUnitsSold"]
-    },
-    "UserBase": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserBase",
-      "type": "object",
-      "description": "Represents a user of the application.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the user." },
-        "username": { "type": "string", "description": "Username for the user." },
-        "email": { "type": "string", "description": "Email address of the user.", "format": "email" },
-        "role": { "type": "string", "description": "Role of the user (e.g., 'admin', 'user')." }
-      },
-      "required": ["id", "username", "email", "role"]
-    },
-    "AdminBase": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AdminBase",
-      "type": "object",
-      "description": "Represents an administrator of the application.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the administrator." },
-        "username": { "type": "string", "description": "Username for the administrator." },
-        "email": { "type": "string", "description": "Email address of the administrator.", "format": "email" },
-        "role": { "type": "string", "description": "Role of the administrator (e.g., 'superadmin', 'admin')." }
-      },
-      "required": ["id", "username", "email", "role"]
+        "required": ["id", "name", "productId", "status", "startDate", "endDate", "controlPrice", "experimentPrice"]
     },
     "EmergencyEvent": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -166,14 +144,6 @@
       {
         "path": "/experiments/{experimentId}",
         "definition": { "entityName": "Experiment", "schema": { "$ref": "#/entities/Experiment" }, "description": "Stores pricing experiments." }
-      },
-      {
-        "path": "/userbase/{userId}",
-        "definition": { "entityName": "UserBase", "schema": { "$ref": "#/entities/UserBase" }, "description": "Stores user profile information." }
-      },
-      {
-        "path": "/adminbase/{adminId}",
-        "definition": { "entityName": "AdminBase", "schema": { "$ref": "#/entities/AdminBase" }, "description": "Stores admin profile information." }
       },
       {
         "path": "/emergencyEvents/{eventId}",

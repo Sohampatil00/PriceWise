@@ -11,11 +11,14 @@ export default function CompetitorMapPage() {
                     <CardHeader>
                         <CardTitle className="font-headline">Competitor Landscape</CardTitle>
                         <CardDescription>
-                            Visualizing competitor pricing. This feature is under development.
+                            Visualizing your prices against competitors like Amazon, Flipkart, and BigBasket. This feature is under development.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <p>A map visualization will be displayed here to compare your prices with competitors in different regions.</p>
+                        <div className="text-center text-muted-foreground py-12">
+                            <p className="text-lg font-semibold">Coming Soon</p>
+                            <p>A map visualization will be displayed here to compare your prices with competitors in different regions, highlighting opportunities for dynamic adjustments, especially during crisis events.</p>
+                        </div>
                     </CardContent>
                 </Card>
             </main>

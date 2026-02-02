@@ -1,104 +1,151 @@
 import { Firestore, collection, writeBatch, doc } from 'firebase/firestore';
-import type { Product, CompetitorPrice, PriceHistory, Experiment } from './types';
+import type { Product, CompetitorPrice, Experiment } from './types';
 
-const products: Omit<Product, 'id'>[] = [
+// Omit 'id' as it will be auto-generated or assigned.
+type ProductSeed = Omit<Product, 'id'>;
+type CompetitorPriceSeed = Omit<CompetitorPrice, 'id' | 'productId'>;
+
+const productsData: (ProductSeed & { competitors: CompetitorPriceSeed[], productId: string })[] = [
     {
-      name: 'Wireless Headphones',
-      category: 'Electronics',
-      cost: 5000,
-      currentPrice: 7999,
-      minPrice: 6000,
-      maxPrice: 12000,
-      targetMargin: 30,
-      inventory: 150,
-      salesLast30d: 320,
-      imageUrl: 'https://picsum.photos/seed/1/600/400',
-      imageHint: 'wireless headphones',
-      description: 'High-fidelity wireless headphones with noise-cancelling technology, 20-hour battery life, and a comfortable over-ear design. Perfect for music lovers and frequent travelers.',
-      isEssential: false,
-    },
-    {
-      name: 'Infant Formula',
-      category: 'Baby',
-      cost: 1500,
-      currentPrice: 2499,
-      minPrice: 2000,
-      maxPrice: 3500,
-      targetMargin: 20,
-      inventory: 250,
-      salesLast30d: 800,
-      imageUrl: 'https://picsum.photos/seed/pricewisebaby/600/400',
-      imageHint: 'baby formula',
-      description: 'Nutritionally complete infant formula for babies 0-12 months. Enriched with iron and DHA for brain development. A crucial item for infants.',
+      productId: 'prod_001',
+      name: 'Aashirvaad Shudh Chakki Atta',
+      category: 'Groceries',
+      cost: 380,
+      currentPrice: 450,
+      minPrice: 400,
+      maxPrice: 550,
+      targetMargin: 15,
+      inventory: 500,
+      salesLast30d: 1200,
+      imageUrl: 'https://picsum.photos/seed/atta/600/400',
+      imageHint: 'wheat flour',
+      description: '10kg pack of whole wheat flour, perfect for making soft rotis. Made from the choicest grains - heavy on the palm, golden amber in colour and hard in bite.',
       isEssential: true,
+      competitors: [
+        { competitor: 'Amazon', price: 445, lastUpdated: new Date().toISOString() },
+        { competitor: 'Flipkart', price: 455, lastUpdated: new Date().toISOString() },
+        { competitor: 'BigBasket', price: 450, lastUpdated: new Date().toISOString() },
+      ]
     },
     {
-      name: 'Ergonomic Office Chair',
-      category: 'Furniture',
-      cost: 12000,
-      currentPrice: 24999,
-      minPrice: 20000,
-      maxPrice: 35000,
-      targetMargin: 40,
-      inventory: 45,
-      salesLast30d: 95,
-      imageUrl: 'https://picsum.photos/seed/3/600/400',
-      imageHint: 'office chair',
-      description: 'A fully adjustable ergonomic office chair with lumbar support, adjustable armrests, and a breathable mesh back. Designed for all-day comfort and improved posture.',
-      isEssential: false,
+      productId: 'prod_002',
+      name: 'Tata Salt',
+      category: 'Groceries',
+      cost: 18,
+      currentPrice: 24,
+      minPrice: 20,
+      maxPrice: 30,
+      targetMargin: 25,
+      inventory: 2000,
+      salesLast30d: 5000,
+      imageUrl: 'https://picsum.photos/seed/salt/600/400',
+      imageHint: 'salt packet',
+      description: '1kg packet of iodized salt. India\'s first packaged iodized salt brand with a legacy of trust and quality.',
+      isEssential: true,
+      competitors: [
+        { competitor: 'Amazon', price: 23, lastUpdated: new Date().toISOString() },
+        { competitor: 'Flipkart', price: 24, lastUpdated: new Date().toISOString() },
+        { competitor: 'BigBasket', price: 24, lastUpdated: new Date().toISOString() },
+      ]
     },
     {
-      name: 'Paracetamol Tablets',
-      category: 'Health',
-      cost: 50,
-      currentPrice: 99,
+      productId: 'prod_003',
+      name: 'Amul Butter',
+      category: 'Dairy',
+      cost: 240,
+      currentPrice: 275,
+      minPrice: 260,
+      maxPrice: 300,
+      targetMargin: 12,
+      inventory: 800,
+      salesLast30d: 3500,
+      imageUrl: 'https://picsum.photos/seed/butter/600/400',
+      imageHint: 'butter block',
+      description: '500g pasteurised butter. Made from the finest fresh cream, it has a delicious, creamy taste.',
+      isEssential: true,
+      competitors: [
+        { competitor: 'BigBasket', price: 275, lastUpdated: new Date().toISOString() },
+        { competitor: 'Reliance', price: 274, lastUpdated: new Date().toISOString() },
+      ]
+    },
+    {
+      productId: 'prod_004',
+      name: 'Parle-G Biscuits',
+      category: 'Snacks',
+      cost: 65,
+      currentPrice: 80,
       minPrice: 70,
-      maxPrice: 150,
-      targetMargin: 50,
-      inventory: 1000,
-      salesLast30d: 2500,
-      imageUrl: 'https://picsum.photos/seed/pricewisemed/600/400',
-      imageHint: 'medicine tablets',
-      description: 'Effective pain and fever relief. Paracetamol 500mg tablets for headaches, body aches, and fever. An essential household medicine.',
+      maxPrice: 90,
+      targetMargin: 18,
+      inventory: 1500,
+      salesLast30d: 10000,
+      imageUrl: 'https://picsum.photos/seed/biscuits/600/400',
+      imageHint: 'biscuit packet',
+      description: 'Large 800g family pack. Filled with the goodness of milk and wheat, Parle-G has been a source of all-round nourishment for the nation.',
+      isEssential: false,
+       competitors: [
+        { competitor: 'Amazon', price: 78, lastUpdated: new Date().toISOString() },
+        { competitor: 'Flipkart', price: 80, lastUpdated: new Date().toISOString() },
+        { competitor: 'BigBasket', price: 80, lastUpdated: new Date().toISOString() },
+      ]
+    },
+     {
+      productId: 'prod_005',
+      name: 'Dettol Antiseptic Liquid',
+      category: 'Health',
+      cost: 150,
+      currentPrice: 190,
+      minPrice: 170,
+      maxPrice: 220,
+      targetMargin: 20,
+      inventory: 700,
+      salesLast30d: 1500,
+      imageUrl: 'https://picsum.photos/seed/antiseptic/600/400',
+      imageHint: 'antiseptic liquid',
+      description: '550ml bottle of Dettol Antiseptic Liquid. A safe and gentle antiseptic and disinfectant that kills germs and provides protection against infection.',
       isEssential: true,
+      competitors: [
+        { competitor: 'Amazon', price: 188, lastUpdated: new Date().toISOString() },
+        { competitor: 'Nykaa', price: 190, lastUpdated: new Date().toISOString() },
+      ]
     },
 ];
 
 const experiments: Omit<Experiment, 'id'>[] = [
     {
-      name: "Price Test",
-      productId: "prod_001", // Wireless Headphones
+      name: "Atta Price Reduction Test",
+      productId: "prod_001",
       status: "completed",
       startDate: "2024-07-01",
       endDate: "2024-07-15",
-      controlPrice: 8499,
-      experimentPrice: 7999,
-      controlRevenue: 1019880,
-      experimentRevenue: 1279840,
-      controlUnitsSold: 120,
-      experimentUnitsSold: 160
+      controlPrice: 460,
+      experimentPrice: 450,
+      controlRevenue: 230000, // 500 * 460
+      experimentRevenue: 315000, // 700 * 450
+      controlUnitsSold: 500,
+      experimentUnitsSold: 700
     },
     {
-      name: "Demand Spike",
-      productId: "prod_004", // Paracetamol Tablets
+      name: "Butter Weekend Sale",
+      productId: "prod_003",
       status: "active",
       startDate: "2024-07-20",
       endDate: "2024-08-05",
-      controlPrice: 99,
-      experimentPrice: 119,
-      controlRevenue: 118800, // 1200 * 99
-      experimentRevenue: 95200, // 800 * 119
-      controlUnitsSold: 1200,
-      experimentUnitsSold: 800
+      controlPrice: 275,
+      experimentPrice: 265,
+      controlRevenue: 275000, 
+      experimentRevenue: 318000,
+      controlUnitsSold: 1000,
+      experimentUnitsSold: 1200
     },
      {
-      name: "Margin Push",
-      productId: "prod_003", // Office Chair
+      name: "Biscuit Bundle Offer",
+      productId: "prod_004",
       status: "draft",
       startDate: "2024-08-10",
       endDate: "2024-08-25",
-      controlPrice: 24999,
-      experimentPrice: 26999,
+      controlPrice: 80,
+      experimentPrice: 75, // Effective price in bundle
       controlRevenue: 0,
       experimentRevenue: 0,
       controlUnitsSold: 0,
@@ -109,11 +156,18 @@ const experiments: Omit<Experiment, 'id'>[] = [
 export async function seedDatabase(db: Firestore) {
     const batch = writeBatch(db);
 
-    // Seed Products
-    products.forEach((product, i) => {
-        const id = `prod_00${i + 1}`;
-        const docRef = doc(db, 'products', id);
-        batch.set(docRef, { ...product, id });
+    // Seed Products and their Competitor Prices
+    productsData.forEach((productData) => {
+        const { productId, competitors, ...product } = productData;
+        const productRef = doc(db, 'products', productId);
+        batch.set(productRef, { ...product, id: productId });
+
+        // Seed competitor prices for this product
+        const competitorPricesRef = collection(productRef, 'competitorPrices');
+        competitors.forEach(competitorPrice => {
+            const competitorDocRef = doc(competitorPricesRef);
+            batch.set(competitorDocRef, competitorPrice);
+        });
     });
 
     // Seed Experiments

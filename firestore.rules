@@ -2,51 +2,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Public read access for all data needed by the UI.
-    // Writes are disabled as there is no authentication model.
+    // Public read access for most data.
+    // Writes are enabled for products and experiments to allow for demoing
+    // the "Add Product" and "Add Experiment" features.
 
     match /products/{productId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create, update, delete: if true; // Allow writes for demo
     }
 
-    match /products/{productId}/competitorPrices/{competitorPriceId} {
+    match /products/{productId}/{subcollection}/{docId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    match /products/{productId}/priceHistory/{priceHistoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    match /products/{productId}/pricingRules/{pricingRuleId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    match /products/{productId}/demandForecasts/{demandForecastId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create, update, delete: if true; // Allow writes for demo
     }
 
     match /experiments/{experimentId} {
        allow get, list: if true;
-       allow create, update, delete: if false;
+       allow create, update, delete: if true; // Allow writes for demo
     }
 
     match /emergencyEvents/{eventId} {
        allow get, list: if true;
+       // Keep emergency events read-only from client for safety
        allow create, update, delete: if false;
-    }
-
-    // Auth-related collections are no longer used and are locked down.
-    match /userbase/{userId} {
-      allow read, write: if false;
-    }
-
-    match /adminbase/{adminId} {
-      allow read, write: if false;
     }
   }
 }

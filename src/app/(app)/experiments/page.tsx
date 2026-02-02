@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ export default function ExperimentsPage() {
     const draftExperiments = experiments?.filter((e) => e.status === 'draft') ?? [];
 
     const ExperimentCard = ({ exp }: { exp: Experiment }) => {
-        const productRef = useMemoFirebase(() => doc(firestore, 'products', exp.productId), [firestore, exp.productId]);
+        const productRef = useMemoFirebase(() => exp.productId ? doc(firestore, 'products', exp.productId) : null, [firestore, exp.productId]);
         const { data: product, isLoading: isLoadingProduct } = useDoc<Product>(productRef);
 
         const statusConfig = {
@@ -33,7 +34,7 @@ export default function ExperimentsPage() {
         const currentStatus = statusConfig[exp.status];
         
         if (isLoadingProduct) {
-            return <Card>Loading product...</Card>
+            return <Card className="flex items-center justify-center p-6"><p>Loading experiment...</p></Card>
         }
         
         return (
@@ -42,7 +43,7 @@ export default function ExperimentsPage() {
                     <div className="flex justify-between items-start">
                         <div>
                             <CardTitle className="font-headline text-lg">{exp.name}</CardTitle>
-                            <CardDescription>{product?.name}</CardDescription>
+                            <CardDescription>{product?.name ?? 'Product not found'}</CardDescription>
                         </div>
                         <Badge variant="outline" className={currentStatus.color}>
                             <currentStatus.icon className="mr-1 h-3 w-3" />
@@ -57,11 +58,11 @@ export default function ExperimentsPage() {
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Control Price</span>
-                        <span>₹{exp.controlPrice.toFixed(2)}</span>
+                        <span>₹{exp.controlPrice?.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Experiment Price</span>
-                        <span>₹{exp.experimentPrice.toFixed(2)}</span>
+                        <span>₹{exp.experimentPrice?.toFixed(2)}</span>
                     </div>
                 </CardContent>
                 <CardFooter>
@@ -75,9 +76,11 @@ export default function ExperimentsPage() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Experiments">
-         <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> New Experiment
-        </Button>
+        <Link href="/experiments/new">
+            <Button>
+                <PlusCircle className="mr-2 h-4 w-4" /> New Experiment
+            </Button>
+        </Link>
       </Header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Tabs defaultValue="active">
