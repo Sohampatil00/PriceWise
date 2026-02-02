@@ -222,7 +222,6 @@
   },
   "auth": {
     "providers": [
-      "password",
       "anonymous"
     ]
   },
@@ -324,3 +323,4 @@
     "reasoning": "The Firestore structure is designed to optimize for security, scalability, and real-time data access, crucial for a dynamic pricing optimization engine. It leverages path-based ownership for user-specific data and denormalization to ensure authorization independence. Here's a breakdown:\n\n*   `/products/{productId}`:  Stores product information. This collection uses a simple document structure for core product attributes.\n*   `/products/{productId}/competitorPrices/{competitorPriceId}`:  Stores competitor pricing data for each product, enabling real-time price adjustments based on market trends.  The productId is present in the document to enable authorization independence.\n*   `/products/{productId}/demandPredictions/{demandPredictionId}`: Stores demand predictions for each product over time, which is essential for dynamic pricing based on anticipated demand. The productId is present in the document to enable authorization independence.\n*   `/priceOptimizationRules/{priceOptimizationRuleId}`:  Stores rules that define pricing constraints and guidelines, offering flexibility in configuring the optimization engine.\n*   `/products/{productId}/abTests/{abTestId}`:  Stores A/B test data for different pricing strategies, facilitating continuous learning and optimization.\n\n**Authorization Independence (CRITICAL):**\nThe structure avoids hierarchical authorization dependencies (`get()`) by including the `productId` in subcollections (`competitorPrices`, `demandPredictions`, and `abTests`). This denormalization allows security rules to validate access based on the document's content alone, without needing to fetch parent documents. This is crucial for atomic operations (transactions/batches) and simplifies debugging.\n\n**QAPs (Rules are not Filters):**\nThe segregation of data into dedicated collections and subcollections ensures that list operations can be secured effectively. For instance, listing `competitorPrices` for a specific `product` can be done securely using rules that check the `productId` within each document.\n\n**Denormalization:**\nThe `productId` in the subcollections is a key denormalization strategy. It allows direct association of the subcollection documents with their parent `product` without requiring server-side joins or complex queries. This significantly simplifies security rules and improves query performance."
   }
 }
+    
