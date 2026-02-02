@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Logo } from '@/components/icons/logo';
 import { Loader2 } from 'lucide-react';
+import { getRedirectResult } from 'firebase/auth';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -24,8 +25,32 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isProcessingSignIn, setIsProcessingSignIn] = useState(true); // To handle both button click and redirect
+  const [error, setError] = useState<string | null>(null);
 
+  // This effect handles the redirect result from Google Sign-In
+  useEffect(() => {
+    // Only run this when the auth instance is available
+    if (auth) {
+      getRedirectResult(auth)
+        .then((result) => {
+          // If result is null, it means the user just landed on the page
+          // without a redirect. If there's a result, the onAuthStateChanged
+          // listener will handle the user state update.
+        })
+        .catch((err) => {
+          // This catches errors from the redirect flow, e.g., account exists with different credential
+          console.error("Google Sign-In Redirect Error:", err);
+          setError("An error occurred during sign-in. Please try again.");
+        })
+        .finally(() => {
+          // We are done processing the redirect, whether it succeeded, failed, or didn't happen.
+           setIsProcessingSignIn(false);
+        });
+    }
+  }, [auth]);
+
+  // This effect handles redirecting the user once they are authenticated
   useEffect(() => {
     if (!isUserLoading && user) {
       router.replace('/dashboard');
@@ -33,11 +58,23 @@ export default function LoginPage() {
   }, [user, isUserLoading, router]);
 
   const handleGoogleSignIn = () => {
-    setIsSigningIn(true);
+    setIsProcessingSignIn(true);
+    setError(null);
     initiateGoogleSignIn(auth);
   };
   
-  if (isUserLoading || user) {
+  // Show a global loader while the initial user check is happening or
+  // we are processing a sign-in redirect.
+  if (isUserLoading || isProcessingSignIn) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+  
+  // If user exists, we should be redirecting, but this prevents a flash of the login page.
+  if (user) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-background">
             <Loader2 className="h-8 w-8 animate-spin" />
@@ -55,13 +92,18 @@ export default function LoginPage() {
         <CardDescription>Sign in to access the pricing dashboard.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <Button onClick={handleGoogleSignIn} variant="outline" className="w-full" disabled={isSigningIn}>
-            {isSigningIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2" />}
+        <Button onClick={handleGoogleSignIn} variant="outline" className="w-full" disabled={isProcessingSignIn}>
+            {isProcessingSignIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2" />}
             Sign in with Google
         </Button>
         {searchParams.get('error') === 'auth' && (
             <p className="px-1 text-center text-sm text-destructive">
                 You are not authorized to view this page. Please sign in with an administrator account.
+            </p>
+        )}
+        {error && (
+             <p className="px-1 text-center text-sm text-destructive">
+                {error}
             </p>
         )}
       </CardContent>
