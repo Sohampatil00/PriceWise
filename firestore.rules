@@ -164,5 +164,15 @@ service cloud.firestore {
      match /experiments/{experimentId} {
         allow get, list, create, update, delete: if isAdmin();
      }
+
+    /**
+     * @description Manages crisis/emergency events.
+     * @path /emergencyEvents/{eventId}
+     * @allow (get, list, create, update, delete) Any authenticated admin.
+     * @principle Only admins can manage emergency states.
+     */
+     match /emergencyEvents/{eventId} {
+        allow get, list, create, update, delete: if isAdmin();
+     }
   }
 }

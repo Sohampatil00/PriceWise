@@ -12,6 +12,7 @@ export interface Product {
   imageUrl: string;
   imageHint?: string;
   description: string;
+  isEssential?: boolean;
 }
 
 export interface CompetitorPrice {
@@ -51,4 +52,12 @@ export interface Kpi {
   change: string;
   changeType: 'increase' | 'decrease';
   description: string;
+}
+
+export interface EmergencyEvent {
+  id: string;
+  name: string;
+  isActive: boolean;
+  startDate: string;
+  endDate?: string;
 }

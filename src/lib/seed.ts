@@ -1,4 +1,4 @@
-import { Firestore, collection, writeBatch } from 'firebase/firestore';
+import { Firestore, collection, writeBatch, doc } from 'firebase/firestore';
 import type { Product, CompetitorPrice, PriceHistory, Experiment } from './types';
 
 const products: Omit<Product, 'id'>[] = [
@@ -14,21 +14,23 @@ const products: Omit<Product, 'id'>[] = [
       salesLast30d: 320,
       imageUrl: 'https://picsum.photos/seed/1/600/400',
       imageHint: 'wireless headphones',
-      description: 'High-fidelity wireless headphones with noise-cancelling technology, 20-hour battery life, and a comfortable over-ear design. Perfect for music lovers and frequent travelers.'
+      description: 'High-fidelity wireless headphones with noise-cancelling technology, 20-hour battery life, and a comfortable over-ear design. Perfect for music lovers and frequent travelers.',
+      isEssential: false,
     },
     {
-      name: 'Smart Coffee Maker',
-      category: 'Home Appliances',
-      cost: 8000,
-      currentPrice: 12999,
-      minPrice: 10000,
-      maxPrice: 18000,
-      targetMargin: 25,
-      inventory: 80,
-      salesLast30d: 150,
-      imageUrl: 'https://picsum.photos/seed/2/600/400',
-      imageHint: 'coffee maker',
-      description: 'Wi-Fi enabled smart coffee maker that can be controlled via a mobile app. Brew your coffee from anywhere, schedule brewing times, and customize your coffee strength.'
+      name: 'Infant Formula',
+      category: 'Baby',
+      cost: 1500,
+      currentPrice: 2499,
+      minPrice: 2000,
+      maxPrice: 3500,
+      targetMargin: 20,
+      inventory: 250,
+      salesLast30d: 800,
+      imageUrl: 'https://picsum.photos/seed/pricewisebaby/600/400',
+      imageHint: 'baby formula',
+      description: 'Nutritionally complete infant formula for babies 0-12 months. Enriched with iron and DHA for brain development. A crucial item for infants.',
+      isEssential: true,
     },
     {
       name: 'Ergonomic Office Chair',
@@ -42,28 +44,30 @@ const products: Omit<Product, 'id'>[] = [
       salesLast30d: 95,
       imageUrl: 'https://picsum.photos/seed/3/600/400',
       imageHint: 'office chair',
-      description: 'A fully adjustable ergonomic office chair with lumbar support, adjustable armrests, and a breathable mesh back. Designed for all-day comfort and improved posture.'
+      description: 'A fully adjustable ergonomic office chair with lumbar support, adjustable armrests, and a breathable mesh back. Designed for all-day comfort and improved posture.',
+      isEssential: false,
     },
     {
-      name: '4K Action Camera',
-      category: 'Electronics',
-      cost: 15000,
-      currentPrice: 21999,
-      minPrice: 18000,
-      maxPrice: 30000,
-      targetMargin: 35,
-      inventory: 200,
-      salesLast30d: 450,
-      imageUrl: 'https://picsum.photos/seed/4/600/400',
-      imageHint: 'action camera',
-      description: 'A rugged, waterproof 4K action camera with image stabilization. Capture stunning videos and photos of your adventures. Comes with a variety of mounts and accessories.'
+      name: 'Paracetamol Tablets',
+      category: 'Health',
+      cost: 50,
+      currentPrice: 99,
+      minPrice: 70,
+      maxPrice: 150,
+      targetMargin: 50,
+      inventory: 1000,
+      salesLast30d: 2500,
+      imageUrl: 'https://picsum.photos/seed/pricewisemed/600/400',
+      imageHint: 'medicine tablets',
+      description: 'Effective pain and fever relief. Paracetamol 500mg tablets for headaches, body aches, and fever. An essential household medicine.',
+      isEssential: true,
     },
 ];
 
 const experiments: Omit<Experiment, 'id'>[] = [
     {
       name: "Price Test",
-      productId: "prod_001",
+      productId: "prod_001", // Wireless Headphones
       status: "completed",
       startDate: "2024-07-01",
       endDate: "2024-07-15",
@@ -76,25 +80,25 @@ const experiments: Omit<Experiment, 'id'>[] = [
     },
     {
       name: "Demand Spike",
-      productId: "prod_004",
+      productId: "prod_004", // Paracetamol Tablets
       status: "active",
       startDate: "2024-07-20",
       endDate: "2024-08-05",
-      controlPrice: 21999,
-      experimentPrice: 23999,
-      controlRevenue: 2639880,
-      experimentRevenue: 1919920,
-      controlUnitsSold: 120,
-      experimentUnitsSold: 80
+      controlPrice: 99,
+      experimentPrice: 119,
+      controlRevenue: 118800, // 1200 * 99
+      experimentRevenue: 95200, // 800 * 119
+      controlUnitsSold: 1200,
+      experimentUnitsSold: 800
     },
      {
       name: "Margin Push",
-      productId: "prod_002",
+      productId: "prod_003", // Office Chair
       status: "draft",
       startDate: "2024-08-10",
       endDate: "2024-08-25",
-      controlPrice: 12999,
-      experimentPrice: 13999,
+      controlPrice: 24999,
+      experimentPrice: 26999,
       controlRevenue: 0,
       experimentRevenue: 0,
       controlUnitsSold: 0,
@@ -106,19 +110,17 @@ export async function seedDatabase(db: Firestore) {
     const batch = writeBatch(db);
 
     // Seed Products
-    const productsCollection = collection(db, 'products');
     products.forEach((product, i) => {
         const id = `prod_00${i + 1}`;
-        const docRef = collection(productsCollection, id);
+        const docRef = doc(db, 'products', id);
         batch.set(docRef, { ...product, id });
     });
 
     // Seed Experiments
-    const experimentsCollection = collection(db, 'experiments');
-    experiments.forEach((experiment, i) => {
+    experiments.forEach((exp, i) => {
         const id = `exp_00${i + 1}`;
-        const docRef = collection(experimentsCollection, id);
-        batch.set(docRef, { ...experiment, id });
+        const docRef = doc(db, 'experiments', id);
+        batch.set(docRef, { ...exp, id });
     });
 
     await batch.commit();

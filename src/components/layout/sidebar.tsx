@@ -18,6 +18,9 @@ import {
   FlaskConical,
   Settings,
   LogOut,
+  Shield,
+  Map,
+  TrendingUp,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -36,6 +39,9 @@ const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/products', label: 'Products', icon: Package },
   { href: '/experiments', label: 'Experiments', icon: FlaskConical },
+  { href: '/crisis', label: 'Crisis Mgmt', icon: Shield },
+  { href: '/competitor-map', label: 'Competitor Map', icon: Map },
+  { href: '/predictions', label: 'Predictions', icon: TrendingUp },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

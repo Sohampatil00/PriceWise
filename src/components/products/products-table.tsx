@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -31,6 +32,7 @@ import type { Product } from '@/lib/types';
 import { deleteDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
+import { ClassifyEssentialButton } from './classify-essential-button';
 
 export function ProductsTable({ products }: { products: Product[] }) {
   const firestore = useFirestore();
@@ -57,6 +59,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                 <span className="sr-only">Image</span>
               </TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="hidden md:table-cell">Inventory</TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>
@@ -84,6 +87,14 @@ export function ProductsTable({ products }: { products: Product[] }) {
                     </Link>
                 </TableCell>
                 <TableCell>
+                  {product.isEssential && (
+                    <Badge variant="outline" className="bg-blue-400/20 text-blue-600 hover:bg-blue-400/30 border-blue-400/30">
+                      <ShieldCheck className="mr-1 h-3 w-3" />
+                      Essential
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -107,6 +118,8 @@ export function ProductsTable({ products }: { products: Product[] }) {
                       </DropdownMenuItem>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(product.id)}>Delete</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <ClassifyEssentialButton product={product} />
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

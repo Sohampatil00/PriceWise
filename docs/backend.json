@@ -18,7 +18,8 @@
         "salesLast30d": { "type": "number", "description": "Number of sales in the last 30 days." },
         "imageUrl": { "type": "string", "description": "URL of the product image." },
         "imageHint": { "type": "string", "description": "Hint for AI image generation." },
-        "description": { "type": "string", "description": "A detailed description of the product." }
+        "description": { "type": "string", "description": "A detailed description of the product." },
+        "isEssential": { "type": "boolean", "description": "Indicates if the product is an essential good." }
       },
       "required": ["id", "name", "cost", "currentPrice", "minPrice", "maxPrice", "targetMargin", "inventory", "salesLast30d", "imageUrl", "description"]
     },
@@ -121,6 +122,20 @@
         "role": { "type": "string", "description": "Role of the administrator (e.g., 'superadmin', 'admin')." }
       },
       "required": ["id", "username", "email", "role"]
+    },
+    "EmergencyEvent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmergencyEvent",
+      "type": "object",
+      "description": "Represents a crisis event that triggers special pricing rules.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the event." },
+        "name": { "type": "string", "description": "Name of the crisis event (e.g., 'COVID-19 Pandemic')." },
+        "isActive": { "type": "boolean", "description": "Whether the emergency mode is currently active." },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time", "description": "Optional end date for the event." }
+      },
+      "required": ["id", "name", "isActive", "startDate"]
     }
   },
   "auth": {
@@ -159,6 +174,10 @@
       {
         "path": "/adminbase/{adminId}",
         "definition": { "entityName": "AdminBase", "schema": { "$ref": "#/entities/AdminBase" }, "description": "Stores admin profile information." }
+      },
+      {
+        "path": "/emergencyEvents/{eventId}",
+        "definition": { "entityName": "EmergencyEvent", "schema": { "$ref": "#/entities/EmergencyEvent" }, "description": "Stores crisis event information." }
       }
     ]
   }
