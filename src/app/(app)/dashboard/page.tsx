@@ -11,51 +11,53 @@ import { collection } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import type { Experiment, Kpi } from '@/lib/types';
 import { useMemoFirebase } from '@/firebase/provider';
+import { useUser } from '@clerk/nextjs';
 
 
 const kpis: Kpi[] = [
-    {
-        title: "Total Revenue",
-        value: "₹1.2M",
-        change: "+12.5%",
-        changeType: "increase",
-        description: "vs. last month"
-    },
-    {
-        title: "Average Margin",
-        value: "38.2%",
-        change: "-1.8%",
-        changeType: "decrease",
-        description: "vs. last month"
-    },
-    {
-        title: "Active Experiments",
-        value: "3",
-        change: "+1",
-        changeType: "increase",
-        description: "vs. last week"
-    },
-    {
-        title: "Price Adjustments",
-        value: "1,482",
-        change: "+21%",
-        changeType: "increase",
-        description: "in last 24h"
-    }
+  {
+    title: "Total Revenue",
+    value: "₹1.2M",
+    change: "+12.5%",
+    changeType: "increase",
+    description: "vs. last month"
+  },
+  {
+    title: "Average Margin",
+    value: "38.2%",
+    change: "-1.8%",
+    changeType: "decrease",
+    description: "vs. last month"
+  },
+  {
+    title: "Active Experiments",
+    value: "3",
+    change: "+1",
+    changeType: "increase",
+    description: "vs. last week"
+  },
+  {
+    title: "Price Adjustments",
+    value: "1,482",
+    change: "+21%",
+    changeType: "increase",
+    description: "in last 24h"
+  }
 ];
 
 const revenueData = [
-    { date: 'Jan', optimized: 400000, baseline: 240000 },
-    { date: 'Feb', optimized: 300000, baseline: 139800 },
-    { date: 'Mar', optimized: 520000, baseline: 380000 },
-    { date: 'Apr', optimized: 478000, baseline: 390800 },
-    { date: 'May', optimized: 690000, baseline: 480000 },
-    { date: 'Jun', optimized: 539000, baseline: 380000 },
-    { date: 'Jul', optimized: 649000, baseline: 430000 },
+  { date: 'Jan', optimized: 400000, baseline: 240000 },
+  { date: 'Feb', optimized: 300000, baseline: 139800 },
+  { date: 'Mar', optimized: 520000, baseline: 380000 },
+  { date: 'Apr', optimized: 478000, baseline: 390800 },
+  { date: 'May', optimized: 690000, baseline: 480000 },
+  { date: 'Jun', optimized: 539000, baseline: 380000 },
+  { date: 'Jul', optimized: 649000, baseline: 430000 },
 ];
 
 
 export default function DashboardPage() {
+  const { user } = useUser();
   const firestore = useFirestore();
   const experimentsQuery = useMemoFirebase(() => collection(firestore, 'experiments'), [firestore]);
   const { data: experiments, isLoading } = useCollection<Experiment>(experimentsQuery);
@@ -66,6 +68,21 @@ export default function DashboardPage() {
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Dashboard" />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        {user && (
+          <Card className="w-full">
+            <CardHeader className="flex flex-row items-center gap-4">
+              <img
+                src={user.imageUrl}
+                alt="Profile"
+                className="h-16 w-16 rounded-full border-2 border-primary/20"
+              />
+              <div className="flex flex-col">
+                <CardTitle className="text-2xl font-headline">Welcome back, {user.fullName || user.firstName}!</CardTitle>
+                <CardDescription className="text-base">{user.primaryEmailAddress?.emailAddress}</CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        )}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {kpis.map((kpi) => (
             <KpiCard key={kpi.title} {...kpi} />

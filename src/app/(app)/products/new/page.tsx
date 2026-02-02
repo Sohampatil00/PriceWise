@@ -50,13 +50,20 @@ export default function NewProductPage() {
       inventory: 0,
       targetMargin: 0,
       salesLast30d: 0,
-      imageUrl: 'https://picsum.photos/seed/newproduct/600/400',
+      imageUrl: '',
     },
   });
 
   const onSubmit = (values: z.infer<typeof productSchema>) => {
     const productsRef = collection(firestore, 'products');
-    addDocumentNonBlocking(productsRef, values);
+
+    // Generate an AI image based on the product name if no URL is provided
+    let finalValues = { ...values };
+    if (!values.imageUrl || values.imageUrl.trim() === '') {
+      finalValues.imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(values.name)}%20product%20photo%20professional%20lighting`;
+    }
+
+    addDocumentNonBlocking(productsRef, finalValues);
 
     toast({
       title: 'Product Added',
@@ -190,7 +197,7 @@ export default function NewProductPage() {
                       </FormItem>
                     )}
                   />
-                   <FormField
+                  <FormField
                     control={form.control}
                     name="salesLast30d"
                     render={({ field }) => (
@@ -202,37 +209,37 @@ export default function NewProductPage() {
                     )}
                   />
                 </div>
-                 <FormField
-                    control={form.control}
-                    name="imageUrl"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://picsum.photos/seed/..." {...field} />
-                        </FormControl>
-                         <FormDescription>Use picsum.photos for placeholder images.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="imageHint"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image Hint</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Two keywords for AI to find an image (e.g. 'wheat flour')" {...field} />
-                        </FormControl>
-                         <FormDescription>This helps our AI find better images for your product later.</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://picsum.photos/seed/..." {...field} />
+                      </FormControl>
+                      <FormDescription>Use picsum.photos for placeholder images.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="imageHint"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image Hint</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Two keywords for AI to find an image (e.g. 'wheat flour')" {...field} />
+                      </FormControl>
+                      <FormDescription>This helps our AI find better images for your product later.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Add Product
                 </Button>
               </form>

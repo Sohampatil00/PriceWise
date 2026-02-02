@@ -23,9 +23,7 @@ import {
   TrendingUp,
   LogOut,
 } from 'lucide-react';
-import { useAuth } from '@/firebase';
-import { useUser } from '@/firebase/auth/use-user';
-import { signOut } from 'firebase/auth';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -42,11 +40,11 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
   const handleSignOut = async () => {
-    await signOut(auth);
+    await signOut({ redirectUrl: '/' });
   };
 
   return (
@@ -78,7 +76,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="flex-col items-start gap-2 p-3">
         <SidebarSeparator />
-         {isUserLoading ? (
+        {!isLoaded ? (
           <div className="flex w-full items-center gap-2">
             <Skeleton className="size-8 rounded-full" />
             <Skeleton className="h-4 w-3/4" />
@@ -86,14 +84,14 @@ export function AppSidebar() {
         ) : user ? (
           <div className="flex w-full min-w-0 items-center gap-2">
             <Avatar className="size-8">
-              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'User'} />
-              <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
+              <AvatarImage src={user.imageUrl} alt={user.fullName ?? 'User'} />
+              <AvatarFallback>{user.firstName?.charAt(0) ?? 'U'}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-              <p className="truncate text-sm font-medium">{user.displayName}</p>
-              <p className="truncate text-xs text-sidebar-foreground/70">{user.email}</p>
+              <p className="truncate text-sm font-medium">{user.fullName || user.firstName}</p>
+              <p className="truncate text-xs text-sidebar-foreground/70">{user.primaryEmailAddress?.emailAddress}</p>
             </div>
-             <Button
+            <Button
               variant="ghost"
               size="icon"
               className="size-8 shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden"
