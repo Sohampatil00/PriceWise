@@ -1,35 +1,157 @@
+/**
+ * Core Philosophy: This ruleset establishes a security model for a pricing
+ * optimization engine. During this prototyping phase, the primary goal is to
+ * enable rapid development by allowing any authenticated user (including those
+ * signed in anonymously) to read and write data. This is a temporary, flexible
+* posture chosen because the current data model does not contain user-specific
+* ownership fields (like 'ownerId' or 'userId'). For production, this model
+ * must be updated to include role-based or ownership-based access control.
+ *
+ * Data Structure: The data is organized around a central 'products' collection.
+ * Each product can have related data stored in subcollections like
+ * 'competitorPrices', 'demandPredictions', and 'abTests'. A top-level
+ * collection 'priceOptimizationRules' holds global configuration.
+ *
+ * Key Security Decisions:
+ * - Authenticated Access: All read and write operations are permitted for any
+ *   user who is signed in. Unauthenticated access is denied.
+ * - Relational Integrity: For subcollections under a product (e.g., abTests),
+ *   the rules enforce that the 'productId' field within the document must
+ *   match the parent product's ID in the path. This 'productId' is immutable
+ *   after creation to prevent documents from being moved between products.
+ * - No Schema Validation: In line with the prototyping philosophy, these rules
+ *   do not validate the shape or data types of documents, focusing solely on
+ *   authorization and relational integrity.
+ *
+ * Denormalization for Authorization: The ruleset relies on the denormalized
+ * 'productId' field present in all product subcollection documents. This allows
+ * for fast, simple, and correct validation of relational integrity without
+ * needing costly 'get()' calls to the parent product document.
+ *
+ * Structural Segregation: The use of distinct collections and subcollections
+ * provides a clear structure, ensuring list queries are naturally scoped and
+ * can be secured effectively at the path level.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can only read and write to their own document.
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // ------------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------------
+
+    /**
+     * Returns true if the user is signed in (including anonymous users).
+     */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // Public read access for most data.
-    // Writes are enabled for products and experiments to allow for demoing
-    // the "Add Product" and "Add Experiment" features.
+    /**
+     * Returns true if a document already exists.
+     * Used to protect against updates or deletes of non-existent documents.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
 
+    /**
+     * Validates that the productId in a new subcollection document matches
+     * the productId from the URL path.
+     */
+    function hasValidProductIdOnCreate(productId) {
+      return request.resource.data.productId == productId;
+    }
+
+    /**
+     * Enforces immutability of the productId field on update.
+     * This prevents a document from being logically moved to a different parent.
+     */
+    function isProductIdImmutable() {
+      return request.resource.data.productId == resource.data.productId;
+    }
+
+    // ------------------------------------------------------------------------
+    // Collection Rules
+    // ------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to product documents. Allows any signed-in
+     *              user to read, create, update, and delete products.
+     * @path        /products/{productId}
+     * @allow       (create) A signed-in user creates a new product document.
+     * @deny        (create) An unauthenticated user tries to create a product.
+     * @principle   Grants broad access to any authenticated user for rapid prototyping.
+     */
     match /products/{productId} {
-      allow get, list: if true;
-      allow create, update, delete: if request.auth != null;
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && isExistingDoc();
     }
 
-    match /products/{productId}/{subcollection}/{docId} {
-      allow get, list: if true;
-      allow create, update, delete: if request.auth != null;
+    /**
+     * @description Manages competitor pricing data for a specific product.
+     * @path        /products/{productId}/competitorPrices/{competitorPriceId}
+     * @allow       (create) A signed-in user adds a competitor price with a
+     *              'productId' that matches the path.
+     * @deny        (create) A signed-in user adds a competitor price with a
+     *              mismatched 'productId'.
+     * @principle   Enforces relational integrity by ensuring the denormalized
+     *              'productId' in the document matches its parent path.
+     */
+    match /products/{productId}/competitorPrices/{competitorPriceId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && hasValidProductIdOnCreate(productId);
+      allow update: if isSignedIn() && isExistingDoc() && isProductIdImmutable();
+      allow delete: if isSignedIn() && isExistingDoc();
     }
 
-    match /experiments/{experimentId} {
-       allow get, list: if true;
-       allow create, update, delete: if request.auth != null;
+    /**
+     * @description Manages demand prediction data for a specific product.
+     * @path        /products/{productId}/demandPredictions/{demandPredictionId}
+     * @allow       (create) A signed-in user adds a demand prediction with a
+     *              'productId' that matches the path.
+     * @deny        (update) A signed-in user tries to change the 'productId'
+     *              of an existing demand prediction document.
+     * @principle   Enforces relational integrity by ensuring the denormalized
+     *              'productId' in the document matches its parent path and is immutable.
+     */
+    match /products/{productId}/demandPredictions/{demandPredictionId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && hasValidProductIdOnCreate(productId);
+      allow update: if isSignedIn() && isExistingDoc() && isProductIdImmutable();
+      allow delete: if isSignedIn() && isExistingDoc();
     }
 
-    match /emergencyEvents/{eventId} {
-       allow get, list: if true;
-       // Keep emergency events read-only from client for safety
-       allow create, update, delete: if false;
+    /**
+     * @description Manages A/B test data for a specific product.
+     * @path        /products/{productId}/abTests/{abTestId}
+     * @allow       (create) A signed-in user creates an A/B test record with a
+     *              'productId' that matches the path.
+     * @deny        (create) A user tries to create an A/B test record with a
+     *              'productId' that does not match the parent product in the path.
+     * @principle   Enforces relational integrity by ensuring the denormalized
+     *              'productId' in the document matches its parent path.
+     */
+    match /products/{productId}/abTests/{abTestId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && hasValidProductIdOnCreate(productId);
+      allow update: if isSignedIn() && isExistingDoc() && isProductIdImmutable();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Controls access to global price optimization rules. Allows any
+     *              signed-in user to manage these rules.
+     * @path        /priceOptimizationRules/{priceOptimizationRuleId}
+     * @allow       (create) A signed-in user creates a new optimization rule.
+     * @deny        (create) An unauthenticated user tries to create a rule.
+     * @principle   Grants broad access to any authenticated user for rapid prototyping.
+     */
+    match /priceOptimizationRules/{priceOptimizationRuleId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && isExistingDoc();
     }
   }
 }

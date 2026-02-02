@@ -1,19 +1,29 @@
 'use client';
 import {
-  Auth,
-  GoogleAuthProvider,
-  signInWithRedirect,
+  Auth, // Import Auth type for type hinting
+  signInAnonymously,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
-/**
- * Initiates a non-blocking Google Sign-In with a redirect.
- * Errors are caught and logged to the console, but do not block UI.
- * Auth state changes are handled by the global onAuthStateChanged listener.
- */
-export function initiateGoogleSignIn(authInstance: Auth): void {
-  const provider = new GoogleAuthProvider();
-  signInWithRedirect(authInstance, provider).catch(error => {
-    // This can happen if there are configuration errors.
-    console.error("Google Sign-In Redirect Error:", error);
-  });
+/** Initiate anonymous sign-in (non-blocking). */
+export function initiateAnonymousSignIn(authInstance: Auth): void {
+  // CRITICAL: Call signInAnonymously directly. Do NOT use 'await signInAnonymously(...)'.
+  signInAnonymously(authInstance);
+  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+}
+
+/** Initiate email/password sign-up (non-blocking). */
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
+  // CRITICAL: Call createUserWithEmailAndPassword directly. Do NOT use 'await createUserWithEmailAndPassword(...)'.
+  createUserWithEmailAndPassword(authInstance, email, password);
+  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+}
+
+/** Initiate email/password sign-in (non-blocking). */
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
+  // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
+  signInWithEmailAndPassword(authInstance, email, password);
+  // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
 }

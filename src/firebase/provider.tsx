@@ -2,10 +2,9 @@
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, serverTimestamp } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
-import { setDocumentNonBlocking } from './non-blocking-updates';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -75,26 +74,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    // Explicitly process the redirect result. This is often needed in complex
-    // app structures to ensure the auth state is updated reliably.
-    getRedirectResult(auth).catch((error) => {
-      console.error("FirebaseProvider: Error processing redirect result.", error);
-      setUserAuthState((prevState) => ({ ...prevState, userError: error }));
-    });
+    setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
 
     const unsubscribe = onAuthStateChanged(
       auth,
-      (firebaseUser) => { // Auth state determined (will be triggered by getRedirectResult if applicable)
-        if (firebaseUser) {
-          // User is signed in, create or update their doc in 'users' collection
-          const userRef = doc(firestore, "users", firebaseUser.uid);
-          setDocumentNonBlocking(userRef, {
-            displayName: firebaseUser.displayName,
-            email: firebaseUser.email,
-            photoURL: firebaseUser.photoURL,
-            lastLogin: serverTimestamp()
-          }, { merge: true });
-        }
+      (firebaseUser) => { // Auth state determined
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => { // Auth listener error
@@ -103,7 +87,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       }
     );
     return () => unsubscribe(); // Cleanup
-  }, [auth, firestore]); // Depends on the auth instance
+  }, [auth]); // Depends on the auth instance
 
   // Memoize the context value
   const contextValue = useMemo((): FirebaseContextState => {

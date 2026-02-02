@@ -4,169 +4,323 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Product",
       "type": "object",
-      "description": "Represents a product in the e-commerce system, tailored for the Indian market.",
+      "description": "Represents a product for which the price will be optimized.",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the product." },
-        "name": { "type": "string", "description": "Name of the product." },
-        "category": { "type": "string", "description": "Category of the product (e.g., 'Groceries', 'Personal Care')." },
-        "cost": { "type": "number", "description": "Cost of the product in Rupees." },
-        "currentPrice": { "type": "number", "description": "Current selling price of the product in Rupees." },
-        "minPrice": { "type": "number", "description": "Minimum allowable price for the product in Rupees." },
-        "maxPrice": { "type": "number", "description": "Maximum allowable price for the product in Rupees." },
-        "targetMargin": { "type": "number", "description": "Target profit margin for the product (percentage)." },
-        "inventory": { "type": "number", "description": "Current inventory level of the product." },
-        "salesLast30d": { "type": "number", "description": "Number of sales in the last 30 days." },
-        "imageUrl": { "type": "string", "description": "URL of the product image." },
-        "imageHint": { "type": "string", "description": "Hint for AI image generation (e.g., 'wheat flour')." },
-        "description": { "type": "string", "description": "A detailed description of the product." },
-        "isEssential": { "type": "boolean", "description": "Indicates if the product is an essential good." }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the product."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the product (e.g., Electronics, Clothing)."
+        },
+        "cost": {
+          "type": "number",
+          "description": "The cost of the product."
+        },
+        "currentPrice": {
+          "type": "number",
+          "description": "The current price of the product."
+        },
+        "minPrice": {
+          "type": "number",
+          "description": "The minimum price allowed for the product."
+        },
+        "maxPrice": {
+          "type": "number",
+          "description": "The maximum price allowed for the product."
+        },
+        "targetMargin": {
+          "type": "number",
+          "description": "The target profit margin for the product (percentage)."
+        },
+        "inventory": {
+          "type": "number",
+          "description": "The current inventory level of the product."
+        },
+        "salesLast30d": {
+          "type": "number",
+          "description": "The number of sales in the last 30 days."
+        }
       },
-      "required": ["id", "name", "cost", "currentPrice", "minPrice", "maxPrice", "targetMargin", "inventory", "salesLast30d", "imageUrl", "description"]
+      "required": [
+        "id",
+        "name",
+        "category",
+        "cost",
+        "currentPrice",
+        "minPrice",
+        "maxPrice",
+        "targetMargin",
+        "inventory",
+        "salesLast30d"
+      ]
     },
     "CompetitorPrice": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "CompetitorPrice",
       "type": "object",
-      "description": "Represents a competitor's pricing information for a product.",
+      "description": "Represents the pricing information of a competitor for a specific product.",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the competitor price." },
-        "productId": { "type": "string", "description": "Reference to Product." },
-        "competitor": { 
-          "type": "string", 
-          "description": "Name of the competitor.",
-          "enum": ["Amazon", "Flipkart", "BigBasket", "Nykaa", "Reliance"]
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the competitor price entry."
         },
-        "price": { "type": "number", "description": "Competitor's price for the product in Rupees." },
-        "lastUpdated": { "type": "string", "description": "Timestamp of the last price update.", "format": "date-time" }
-      },
-      "required": ["id", "productId", "competitor", "price", "lastUpdated"]
-    },
-    "PriceHistory": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PriceHistory",
-      "type": "object",
-      "description": "Represents the historical price changes of a product.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the price history entry." },
-        "productId": { "type": "string", "description": "Reference to Product." },
-        "price": { "type": "number", "description": "Price of the product in Rupees at the time of the change." },
-        "timestamp": { "type": "string", "description": "Timestamp of when the price change occurred.", "format": "date-time" }
-      },
-      "required": ["id", "productId", "price", "timestamp"]
-    },
-    "PricingRule": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PricingRule",
-      "type": "object",
-      "description": "Represents a pricing rule or constraint applied to a product.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the pricing rule." },
-        "productId": { "type": "string", "description": "Reference to Product." },
-        "ruleName": { "type": "string", "description": "Name of the pricing rule (e.g., 'never_below_cost')." },
-        "ruleExpression": { "type": "string", "description": "Expression defining the pricing rule (e.g., 'price >= cost * 1.2')." }
-      },
-      "required": ["id", "productId", "ruleName", "ruleExpression"]
-    },
-    "DemandForecast": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DemandForecast",
-      "type": "object",
-      "description": "Represents a demand forecast for a product.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the demand forecast." },
-        "productId": { "type": "string", "description": "Reference to Product." },
-        "forecastedDemand": { "type": "number", "description": "The predicted demand of the product." },
-        "timestamp": { "type": "string", "description": "The timestamp the demand was forcasted.", "format": "date-time" }
-      },
-      "required": ["id", "productId", "forecastedDemand", "timestamp"]
-    },
-    "Experiment": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Experiment",
-        "type": "object",
-        "description": "Represents a pricing experiment.",
-        "properties": {
-            "id": { "type": "string", "description": "Unique identifier for the experiment." },
-            "name": { "type": "string", "description": "Name of the experiment." },
-            "productId": { "type": "string", "description": "Reference to Product." },
-            "status": { "type": "string", "enum": ["active", "completed", "draft"] },
-            "startDate": { "type": "string", "format": "date" },
-            "endDate": { "type": "string", "format": "date" },
-            "controlPrice": { "type": "number" },
-            "experimentPrice": { "type": "number" },
-            "controlRevenue": { "type": "number" },
-            "experimentRevenue": { "type": "number" },
-            "controlUnitsSold": { "type": "number" },
-            "experimentUnitsSold": { "type": "number" }
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N CompetitorPrice)"
         },
-        "required": ["id", "name", "productId", "status", "startDate", "endDate", "controlPrice", "experimentPrice"]
-    },
-    "EmergencyEvent": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "EmergencyEvent",
-      "type": "object",
-      "description": "Represents a crisis event that triggers special pricing rules.",
-      "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the event." },
-        "name": { "type": "string", "description": "Name of the crisis event (e.g., 'COVID-19 Pandemic')." },
-        "isActive": { "type": "boolean", "description": "Whether the emergency mode is currently active." },
-        "startDate": { "type": "string", "format": "date-time" },
-        "endDate": { "type": "string", "format": "date-time", "description": "Optional end date for the event." }
-      },
-      "required": ["id", "name", "isActive", "startDate"]
-    },
-    "UserProfile": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "User Profile",
-        "type": "object",
-        "description": "Represents a user's public profile information.",
-        "properties": {
-            "id": { "type": "string", "description": "The user's unique ID, matching their auth UID." },
-            "displayName": { "type": "string", "description": "The user's display name." },
-            "email": { "type": "string", "format": "email", "description": "The user's email address." },
-            "photoURL": { "type": "string", "format": "uri", "description": "URL of the user's profile picture." },
-            "lastLogin": { "type": "string", "format": "date-time", "description": "Timestamp of the last user login." }
+        "competitor": {
+          "type": "string",
+          "description": "Name of the competitor."
         },
-        "required": ["id", "displayName", "email"]
+        "price": {
+          "type": "number",
+          "description": "The competitor's price for the product."
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Timestamp of the last time the competitor's price was updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "competitor",
+        "price",
+        "lastUpdated"
+      ]
+    },
+    "DemandPrediction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DemandPrediction",
+      "type": "object",
+      "description": "Represents a demand forecast for a specific product at a specific point in time.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the demand prediction."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N DemandPrediction)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp for which the demand is predicted.",
+          "format": "date-time"
+        },
+        "predictedDemand": {
+          "type": "number",
+          "description": "The predicted demand for the product."
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "timestamp",
+        "predictedDemand"
+      ]
+    },
+    "PriceOptimizationRule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PriceOptimizationRule",
+      "type": "object",
+      "description": "Represents a rule that defines constraints or guidelines for price optimization.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the price optimization rule."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the rule."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the rule and its purpose."
+        },
+        "condition": {
+          "type": "string",
+          "description": "The condition that must be met for the rule to apply (e.g., 'inventory < 10')."
+        },
+        "action": {
+          "type": "string",
+          "description": "The action to take if the condition is met (e.g., 'reduce price by 5%')."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "condition",
+        "action"
+      ]
+    },
+    "ABTest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ABTest",
+      "type": "object",
+      "description": "Represents an A/B test for price optimization, comparing different pricing strategies.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the A/B test."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to Product. (Relationship: Product 1:N ABTest)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date and time of the A/B test.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date and time of the A/B test.",
+          "format": "date-time"
+        },
+        "controlPrice": {
+          "type": "number",
+          "description": "The control price used in the A/B test."
+        },
+        "variationPrice": {
+          "type": "number",
+          "description": "The variation price being tested against the control price."
+        },
+        "controlRevenue": {
+          "type": "number",
+          "description": "The revenue generated by the control price during the A/B test."
+        },
+        "variationRevenue": {
+          "type": "number",
+          "description": "The revenue generated by the variation price during the A/B test."
+        },
+        "isSignificant": {
+          "type": "boolean",
+          "description": "Indicates whether the results of the A/B test are statistically significant."
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "startDate",
+        "endDate",
+        "controlPrice",
+        "variationPrice",
+        "controlRevenue",
+        "variationRevenue",
+        "isSignificant"
+      ]
     }
   },
   "auth": {
-    "providers": ["google"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
     "structure": [
       {
         "path": "/products/{productId}",
-        "definition": { "entityName": "Product", "schema": { "$ref": "#/entities/Product" }, "description": "Stores product information." }
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores product information.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "Unique identifier for the product."
+            }
+          ]
+        }
       },
       {
         "path": "/products/{productId}/competitorPrices/{competitorPriceId}",
-        "definition": { "entityName": "CompetitorPrice", "schema": { "$ref": "#/entities/CompetitorPrice" }, "description": "Stores competitor pricing information." }
+        "definition": {
+          "entityName": "CompetitorPrice",
+          "schema": {
+            "$ref": "#/backend/entities/CompetitorPrice"
+          },
+          "description": "Stores competitor pricing data for each product. Includes denormalized 'productId' for authorization independence.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "Unique identifier for the product."
+            },
+            {
+              "name": "competitorPriceId",
+              "description": "Unique identifier for the competitor price entry."
+            }
+          ]
+        }
       },
       {
-        "path": "/products/{productId}/priceHistory/{priceHistoryId}",
-        "definition": { "entityName": "PriceHistory", "schema": { "$ref": "#/entities/PriceHistory" }, "description": "Stores price history." }
+        "path": "/products/{productId}/demandPredictions/{demandPredictionId}",
+        "definition": {
+          "entityName": "DemandPrediction",
+          "schema": {
+            "$ref": "#/backend/entities/DemandPrediction"
+          },
+          "description": "Stores demand predictions for each product. Includes denormalized 'productId' for authorization independence.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "Unique identifier for the product."
+            },
+            {
+              "name": "demandPredictionId",
+              "description": "Unique identifier for the demand prediction."
+            }
+          ]
+        }
       },
       {
-        "path": "/products/{productId}/pricingRules/{pricingRuleId}",
-        "definition": { "entityName": "PricingRule", "schema": { "$ref": "#/entities/PricingRule" }, "description": "Stores pricing rules." }
+        "path": "/priceOptimizationRules/{priceOptimizationRuleId}",
+        "definition": {
+          "entityName": "PriceOptimizationRule",
+          "schema": {
+            "$ref": "#/backend/entities/PriceOptimizationRule"
+          },
+          "description": "Stores price optimization rules.",
+          "params": [
+            {
+              "name": "priceOptimizationRuleId",
+              "description": "Unique identifier for the price optimization rule."
+            }
+          ]
+        }
       },
       {
-        "path": "/products/{productId}/demandForecasts/{demandForecastId}",
-        "definition": { "entityName": "DemandForecast", "schema": { "$ref": "#/entities/DemandForecast" }, "description": "Stores demand forecasts." }
-      },
-      {
-        "path": "/experiments/{experimentId}",
-        "definition": { "entityName": "Experiment", "schema": { "$ref": "#/entities/Experiment" }, "description": "Stores pricing experiments." }
-      },
-      {
-        "path": "/emergencyEvents/{eventId}",
-        "definition": { "entityName": "EmergencyEvent", "schema": { "$ref": "#/entities/EmergencyEvent" }, "description": "Stores crisis event information." }
-      },
-      {
-        "path": "/users/{userId}",
-        "definition": { "entityName": "UserProfile", "schema": { "$ref": "#/entities/UserProfile" }, "description": "Stores user profile information." }
+        "path": "/products/{productId}/abTests/{abTestId}",
+        "definition": {
+          "entityName": "ABTest",
+          "schema": {
+            "$ref": "#/backend/entities/ABTest"
+          },
+          "description": "Stores A/B test data for price optimization. Includes denormalized 'productId' for authorization independence.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "Unique identifier for the product."
+            },
+            {
+              "name": "abTestId",
+              "description": "Unique identifier for the A/B test."
+            }
+          ]
+        }
       }
-    ]
+    ],
+    "reasoning": "The Firestore structure is designed to optimize for security, scalability, and real-time data access, crucial for a dynamic pricing optimization engine. It leverages path-based ownership for user-specific data and denormalization to ensure authorization independence. Here's a breakdown:\n\n*   `/products/{productId}`:  Stores product information. This collection uses a simple document structure for core product attributes.\n*   `/products/{productId}/competitorPrices/{competitorPriceId}`:  Stores competitor pricing data for each product, enabling real-time price adjustments based on market trends.  The productId is present in the document to enable authorization independence.\n*   `/products/{productId}/demandPredictions/{demandPredictionId}`: Stores demand predictions for each product over time, which is essential for dynamic pricing based on anticipated demand. The productId is present in the document to enable authorization independence.\n*   `/priceOptimizationRules/{priceOptimizationRuleId}`:  Stores rules that define pricing constraints and guidelines, offering flexibility in configuring the optimization engine.\n*   `/products/{productId}/abTests/{abTestId}`:  Stores A/B test data for different pricing strategies, facilitating continuous learning and optimization.\n\n**Authorization Independence (CRITICAL):**\nThe structure avoids hierarchical authorization dependencies (`get()`) by including the `productId` in subcollections (`competitorPrices`, `demandPredictions`, and `abTests`). This denormalization allows security rules to validate access based on the document's content alone, without needing to fetch parent documents. This is crucial for atomic operations (transactions/batches) and simplifies debugging.\n\n**QAPs (Rules are not Filters):**\nThe segregation of data into dedicated collections and subcollections ensures that list operations can be secured effectively. For instance, listing `competitorPrices` for a specific `product` can be done securely using rules that check the `productId` within each document.\n\n**Denormalization:**\nThe `productId` in the subcollections is a key denormalization strategy. It allows direct association of the subcollection documents with their parent `product` without requiring server-side joins or complex queries. This significantly simplifies security rules and improves query performance."
   }
 }
