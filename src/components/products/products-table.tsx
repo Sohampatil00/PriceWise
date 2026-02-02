@@ -1,3 +1,4 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MoreHorizontal } from 'lucide-react';
@@ -27,8 +28,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { Product } from '@/lib/types';
+import { deleteDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 export function ProductsTable({ products }: { products: Product[] }) {
+  const firestore = useFirestore();
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+        deleteDocumentNonBlocking(doc(firestore, 'products', id));
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -78,7 +90,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                   {product.inventory}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  ${product.current_price.toFixed(2)}
+                  ₹{product.currentPrice.toFixed(2)}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -94,7 +106,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
                         <Link href={`/products/${product.id}`}>View Details</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDelete(product.id)}>Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

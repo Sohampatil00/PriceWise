@@ -3,33 +3,36 @@ export interface Product {
   name: string;
   category: string;
   cost: number;
-  current_price: number;
-  min_price: number;
-  max_price: number;
-  target_margin: number;
+  currentPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  targetMargin: number;
   inventory: number;
-  sales_last_30d: number;
+  salesLast30d: number;
   imageUrl: string;
-  imageHint: string;
+  imageHint?: string;
   description: string;
 }
 
-export interface Competitor {
-  product_id: string;
+export interface CompetitorPrice {
+  id: string;
+  productId: string;
   competitor: 'Amazon' | 'Walmart' | 'BestBuy' | 'Target';
   price: number;
-  last_updated: string;
+  lastUpdated: string;
 }
 
 export interface PriceHistory {
-  date: string;
+  id: string;
+  productId: string;
   price: number;
+  timestamp: string;
 }
 
 export interface Experiment {
   id: string;
-  name: "Price Test" | "Demand Spike" | "Margin Push";
-  product_id: string;
+  name: string;
+  productId: string;
   status: "active" | "completed" | "draft";
   startDate: string;
   endDate: string;

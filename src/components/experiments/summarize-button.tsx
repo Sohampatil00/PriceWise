@@ -26,7 +26,17 @@ export function SummarizeButton({ experiment }: { experiment: Experiment }) {
     setIsLoading(true);
     setSummary(null);
     try {
-      const result = await summarizePriceExperimentResults(experiment);
+      const result = await summarizePriceExperimentResults({
+        experimentName: experiment.name,
+        startDate: experiment.startDate,
+        endDate: experiment.endDate,
+        controlPrice: experiment.controlPrice,
+        experimentPrice: experiment.experimentPrice,
+        controlRevenue: experiment.controlRevenue,
+        experimentRevenue: experiment.experimentRevenue,
+        controlUnitsSold: experiment.controlUnitsSold,
+        experimentUnitsSold: experiment.experimentUnitsSold,
+      });
       setSummary(result);
     } catch (error) {
       console.error('Failed to summarize experiment results:', error);

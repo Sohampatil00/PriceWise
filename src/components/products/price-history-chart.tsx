@@ -33,7 +33,7 @@ export function PriceHistoryChart({ data }: { data: any[] }) {
             />
             <YAxis 
                 domain={['dataMin - 10', 'dataMax + 10']}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `₹${value}`}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}

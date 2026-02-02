@@ -89,8 +89,8 @@ service cloud.firestore {
      * @principle Restricts access to an admin's own data tree and enforces document ownership.
      */
     match /adminbase/{adminId} {
-      allow get: if isOwner(adminId);
-      allow list: if false; // Disallow admin enumeration for security.
+      allow get: if isOwner(adminId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if isOwner(adminId) && request.resource.data.id == adminId;
       allow update: if isOwner(adminId) && resource != null && request.resource.data.id == resource.data.id;
       allow delete: if isOwner(adminId) && resource != null;
@@ -119,10 +119,7 @@ service cloud.firestore {
      * @principle Enforces role-based access and validates relational integrity between documents.
      */
     match /products/{productId}/competitorPrices/{competitorPriceId} {
-      allow get, list: if isAdmin();
-      allow create: if isAdmin() && request.resource.data.productId == productId;
-      allow update: if isAdmin() && resource != null && request.resource.data.productId == resource.data.productId;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list, create, update, delete: if isAdmin();
     }
 
     /**
@@ -133,10 +130,7 @@ service cloud.firestore {
      * @principle Enforces role-based access and validates relational integrity between documents.
      */
     match /products/{productId}/priceHistory/{priceHistoryId} {
-      allow get, list: if isAdmin();
-      allow create: if isAdmin() && request.resource.data.productId == productId;
-      allow update: if isAdmin() && resource != null && request.resource.data.productId == resource.data.productId;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list, create, update, delete: if isAdmin();
     }
 
     /**
@@ -147,10 +141,7 @@ service cloud.firestore {
      * @principle Enforces role-based access and validates relational integrity between documents.
      */
     match /products/{productId}/pricingRules/{pricingRuleId} {
-      allow get, list: if isAdmin();
-      allow create: if isAdmin() && request.resource.data.productId == productId;
-      allow update: if isAdmin() && resource != null && request.resource.data.productId == resource.data.productId;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list, create, update, delete: if isAdmin();
     }
 
     /**
@@ -161,10 +152,17 @@ service cloud.firestore {
      * @principle Enforces role-based access and validates relational integrity between documents.
      */
     match /products/{productId}/demandForecasts/{demandForecastId} {
-      allow get, list: if isAdmin();
-      allow create: if isAdmin() && request.resource.data.productId == productId;
-      allow update: if isAdmin() && resource != null && request.resource.data.productId == resource.data.productId;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list, create, update, delete: if isAdmin();
     }
+
+    /**
+     * @description Manages pricing experiments.
+     * @path /experiments/{experimentId}
+     * @allow (get, create, update, delete) Any authenticated admin.
+     * @principle Enforces role-based access control, restricting all operations to administrators.
+     */
+     match /experiments/{experimentId} {
+        allow get, list, create, update, delete: if isAdmin();
+     }
   }
 }

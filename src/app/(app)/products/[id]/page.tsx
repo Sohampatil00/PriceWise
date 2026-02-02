@@ -1,22 +1,42 @@
+'use client';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Header } from '@/components/layout/header';
-import { products, competitors, getPriceHistory } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { PriceHistoryChart } from '@/components/products/price-history-chart';
 import { Separator } from '@/components/ui/separator';
+import { useDoc, useCollection, useFirestore } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
+import type { Product, CompetitorPrice, PriceHistory } from '@/lib/types';
+import { useMemoFirebase } from '@/firebase/provider';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const product = products.find((p) => p.id === params.id);
+  const firestore = useFirestore();
+
+  const productRef = useMemoFirebase(() => doc(firestore, 'products', params.id), [firestore, params.id]);
+  const { data: product, isLoading: isProductLoading } = useDoc<Product>(productRef);
+
+  const competitorsQuery = useMemoFirebase(() => product ? collection(firestore, 'products', params.id, 'competitorPrices') : null, [product, firestore, params.id]);
+  const { data: productCompetitors, isLoading: areCompetitorsLoading } = useCollection<CompetitorPrice>(competitorsQuery);
+
+  const priceHistoryQuery = useMemoFirebase(() => product ? collection(firestore, 'products', params.id, 'priceHistory') : null, [product, firestore, params.id]);
+  const { data: priceHistory, isLoading: isHistoryLoading } = useCollection<PriceHistory>(priceHistoryQuery);
+
+  if (isProductLoading || areCompetitorsLoading || isHistoryLoading) {
+    return (
+        <div className="flex min-h-screen w-full flex-col items-center justify-center">
+            <p>Loading product details...</p>
+        </div>
+    );
+  }
 
   if (!product) {
     notFound();
   }
 
-  const productCompetitors = competitors.filter((c) => c.product_id === product.id);
-  const priceHistory = getPriceHistory(product.id, product.current_price);
+  const formattedPriceHistory = priceHistory?.map(h => ({ date: new Date(h.timestamp).toISOString().split('T')[0], price: h.price })) ?? [];
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -29,7 +49,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <CardDescription>Last 30 days of price adjustments.</CardDescription>
             </CardHeader>
             <CardContent>
-                <PriceHistoryChart data={priceHistory} />
+                <PriceHistoryChart data={formattedPriceHistory} />
             </CardContent>
           </Card>
           <Card>
@@ -46,11 +66,11 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productCompetitors.map((c) => (
-                    <TableRow key={c.competitor}>
+                  {productCompetitors?.map((c) => (
+                    <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.competitor}</TableCell>
-                      <TableCell>${c.price.toFixed(2)}</TableCell>
-                      <TableCell>{new Date(c.last_updated).toLocaleString()}</TableCell>
+                      <TableCell>₹{c.price.toFixed(2)}</TableCell>
+                      <TableCell>{new Date(c.lastUpdated).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -69,7 +89,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     </div>
                      <div className="grid gap-2">
                         <div className="text-lg font-bold">{product.name}</div>
-                        <p className="text-sm text-muted-foreground">{product.description}</p>
                      </div>
                     <Separator />
                      <div className="grid grid-cols-2 gap-4 text-sm">
@@ -77,19 +96,19 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                         <div><Badge variant="outline">{product.category}</Badge></div>
 
                         <div className="font-medium text-muted-foreground">Current Price</div>
-                        <div className="font-bold">${product.current_price.toFixed(2)}</div>
+                        <div className="font-bold">₹{product.currentPrice.toFixed(2)}</div>
                         
                         <div className="font-medium text-muted-foreground">Cost</div>
-                        <div>${product.cost.toFixed(2)}</div>
+                        <div>₹{product.cost.toFixed(2)}</div>
                         
                         <div className="font-medium text-muted-foreground">Inventory</div>
                         <div>{product.inventory} units</div>
 
                         <div className="font-medium text-muted-foreground">Target Margin</div>
-                        <div>{product.target_margin}%</div>
+                        <div>{product.targetMargin}%</div>
 
                          <div className="font-medium text-muted-foreground">Price Range</div>
-                        <div>${product.min_price.toFixed(2)} - ${product.max_price.toFixed(2)}</div>
+                        <div>₹{product.minPrice.toFixed(2)} - ₹{product.maxPrice.toFixed(2)}</div>
                      </div>
                 </CardContent>
             </Card>

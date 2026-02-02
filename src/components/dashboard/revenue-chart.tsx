@@ -27,7 +27,7 @@ export function RevenueChart({ data }: { data: any[] }) {
           axisLine={false}
         />
         <YAxis
-          tickFormatter={(value) => `$${value / 1000}k`}
+          tickFormatter={(value) => `₹${value / 1000}k`}
           tickLine={false}
           axisLine={false}
           tickMargin={10}
