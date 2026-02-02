@@ -29,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { Product } from '@/lib/types';
-import { deleteDocumentNonBlocking } from '@/firebase';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { ClassifyEssentialButton } from './classify-essential-button';
@@ -132,7 +132,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Showing <strong>{products.length > 0 ? 1 : 0}-{products.length}</strong> of <strong>{products.length}</strong> products
+          Showing <strong>{products.length > 0 ? `1-${products.length}`: 0}</strong> of <strong>{products.length}</strong> products
         </div>
       </CardFooter>
     </Card>

@@ -13,17 +13,17 @@ service cloud.firestore {
 
     match /products/{productId} {
       allow get, list: if true;
-      allow create, update, delete: if true; // Allow writes for demo
+      allow create, update, delete: if request.auth != null;
     }
 
     match /products/{productId}/{subcollection}/{docId} {
       allow get, list: if true;
-      allow create, update, delete: if true; // Allow writes for demo
+      allow create, update, delete: if request.auth != null;
     }
 
     match /experiments/{experimentId} {
        allow get, list: if true;
-       allow create, update, delete: if true; // Allow writes for demo
+       allow create, update, delete: if request.auth != null;
     }
 
     match /emergencyEvents/{eventId} {

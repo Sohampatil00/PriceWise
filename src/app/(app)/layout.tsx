@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
-import { useUser } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
 import { SidebarLayout } from '@/components/layout/sidebar-layout';
 import { Loader2 } from 'lucide-react';
 

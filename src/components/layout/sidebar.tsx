@@ -23,7 +23,8 @@ import {
   TrendingUp,
   LogOut,
 } from 'lucide-react';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
