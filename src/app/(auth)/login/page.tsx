@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth, useUser, initiateGoogleSignIn } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -32,6 +33,7 @@ export default function LoginPage() {
   }, [user, isUserLoading, router]);
 
   const handleGoogleSignIn = () => {
+    setIsSigningIn(true);
     initiateGoogleSignIn(auth);
   };
   
@@ -53,8 +55,8 @@ export default function LoginPage() {
         <CardDescription>Sign in to access the pricing dashboard.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
-        <Button onClick={handleGoogleSignIn} variant="outline" className="w-full">
-            <GoogleIcon className="mr-2" />
+        <Button onClick={handleGoogleSignIn} variant="outline" className="w-full" disabled={isSigningIn}>
+            {isSigningIn ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2" />}
             Sign in with Google
         </Button>
         {searchParams.get('error') === 'auth' && (
