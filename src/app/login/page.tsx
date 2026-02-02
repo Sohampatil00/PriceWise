@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   signInWithEmailAndPassword,
@@ -31,17 +31,18 @@ export default function LoginPage() {
 
   const { user, isUserLoading } = useUser();
 
-  if (isUserLoading) {
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || user) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center">
         <p>Loading...</p>
       </div>
     );
-  }
-
-  if (user) {
-    router.push('/dashboard');
-    return null;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
