@@ -116,7 +116,9 @@ export function ProductsTable({ products }: { products: Product[] }) {
                       <DropdownMenuItem asChild>
                         <Link href={`/products/${product.id}`}>View Details</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/products/${product.id}/edit`}>Edit</Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(product.id)}>Delete</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <ClassifyEssentialButton product={product} />

@@ -48,34 +48,25 @@ export default function NewExperimentPage() {
     }
   });
 
-  const onSubmit = async (values: z.infer<typeof experimentSchema>) => {
-    try {
-        const newExperiment = {
-            ...values,
-            startDate: format(values.startDate, 'yyyy-MM-dd'),
-            endDate: format(values.endDate, 'yyyy-MM-dd'),
-            status: 'draft',
-            controlRevenue: 0,
-            experimentRevenue: 0,
-            controlUnitsSold: 0,
-            experimentUnitsSold: 0,
-        };
-        const experimentsRef = collection(firestore, 'experiments');
-        await addDocumentNonBlocking(experimentsRef, newExperiment);
+  const onSubmit = (values: z.infer<typeof experimentSchema>) => {
+    const newExperiment = {
+        ...values,
+        startDate: format(values.startDate, 'yyyy-MM-dd'),
+        endDate: format(values.endDate, 'yyyy-MM-dd'),
+        status: 'draft',
+        controlRevenue: 0,
+        experimentRevenue: 0,
+        controlUnitsSold: 0,
+        experimentUnitsSold: 0,
+    };
+    const experimentsRef = collection(firestore, 'experiments');
+    addDocumentNonBlocking(experimentsRef, newExperiment);
 
-        toast({
-            title: 'Experiment Created',
-            description: `The experiment "${values.name}" has been saved as a draft.`,
-        });
-        router.push('/experiments');
-    } catch (error) {
-        console.error('Failed to create experiment:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to create experiment. Please try again.',
-        });
-    }
+    toast({
+        title: 'Experiment Created',
+        description: `The experiment "${values.name}" has been saved as a draft.`,
+    });
+    router.push('/experiments');
   };
 
   return (

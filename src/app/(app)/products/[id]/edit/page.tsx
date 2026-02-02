@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, notFound } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { addDocumentNonBlocking } from '@/firebase';
-import { useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useEffect } from 'react';
 
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import type { Product } from '@/lib/types';
+import { useMemoFirebase } from '@/firebase/provider';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -32,47 +35,53 @@ const productSchema = z.object({
   imageHint: z.string().optional(),
 });
 
-export default function NewProductPage() {
+export default function EditProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { id } = params;
   const firestore = useFirestore();
   const { toast } = useToast();
 
+  const productRef = useMemoFirebase(() => doc(firestore, 'products', id), [firestore, id]);
+  const { data: product, isLoading: isLoadingProduct } = useDoc<Product>(productRef);
+
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      category: '',
-      description: '',
-      cost: 0,
-      currentPrice: 0,
-      minPrice: 0,
-      maxPrice: 0,
-      inventory: 0,
-      targetMargin: 0,
-      salesLast30d: 0,
-      imageUrl: 'https://picsum.photos/seed/newproduct/600/400',
-    },
+    defaultValues: product ?? {},
   });
 
+  useEffect(() => {
+    if (product) {
+      form.reset(product);
+    }
+  }, [product, form]);
+
   const onSubmit = (values: z.infer<typeof productSchema>) => {
-    const productsRef = collection(firestore, 'products');
-    addDocumentNonBlocking(productsRef, values);
+    const productDocRef = doc(firestore, 'products', id);
+    updateDocumentNonBlocking(productDocRef, values);
 
     toast({
-      title: 'Product Added',
-      description: `"${values.name}" has been added to your catalog.`,
+      title: 'Product Updated',
+      description: `"${values.name}" has been updated.`,
     });
     router.push('/products');
   };
+  
+  if (isLoadingProduct) {
+    return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  }
+
+  if (!product) {
+    notFound();
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <Header title="Add New Product" />
+      <Header title="Edit Product" />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <Card className="mx-auto w-full max-w-4xl">
           <CardHeader>
             <CardTitle className="font-headline">Product Information</CardTitle>
-            <CardDescription>Fill out the details for the new product.</CardDescription>
+            <CardDescription>Update the details for the product.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -233,7 +242,7 @@ export default function NewProductPage() {
 
                 <Button type="submit" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Product
+                  Save Changes
                 </Button>
               </form>
             </Form>
