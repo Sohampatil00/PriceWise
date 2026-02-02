@@ -40,7 +40,7 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message);
+      setError("Login failed. Note: Demo users (admin@pricewise.co, user@pricewise.co) must be created in your Firebase project's Authentication tab.");
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +55,7 @@ export default function LoginPage() {
                 <div className="flex justify-center items-center mb-4">
                     <Logo className="size-12 text-primary" />
                 </div>
-                <CardTitle className="font-headline text-2xl">Welcome Back, Admin</CardTitle>
+                <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
                 <CardDescription>Sign in to access the PriceWise dashboard.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -80,12 +80,32 @@ export default function LoginPage() {
                     required
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && <p className="text-sm text-destructive">{error}</p>}
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
+                
+                <div className="relative w-full">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or use a demo account
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid w-full grid-cols-2 gap-4">
+                  <Button variant="outline" type="button" onClick={() => { setEmail('admin@pricewise.co'); setPassword('password'); setError(null); }}>
+                    Admin
+                  </Button>
+                  <Button variant="outline" type="button" onClick={() => { setEmail('user@pricewise.co'); setPassword('password'); setError(null); }}>
+                    User
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           </form>
