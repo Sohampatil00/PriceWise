@@ -132,7 +132,7 @@ export function ProductsTable({ products }: { products: Product[] }) {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Showing <strong>1-{products.length}</strong> of <strong>{products.length}</strong> products
+          Showing <strong>{products.length > 0 ? 1 : 0}-{products.length}</strong> of <strong>{products.length}</strong> products
         </div>
       </CardFooter>
     </Card>
