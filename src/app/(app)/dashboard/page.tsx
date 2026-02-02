@@ -9,60 +9,67 @@ import { Clock } from 'lucide-react';
 import { useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
-import type { Experiment, Kpi } from '@/lib/types';
+import type { Experiment, Kpi, Product } from '@/lib/types';
 import { useMemoFirebase } from '@/firebase/provider';
 import { useUser } from '@clerk/nextjs';
-
-
-const kpis: Kpi[] = [
-  {
-    title: "Total Revenue",
-    value: "₹1.2M",
-    change: "+12.5%",
-    changeType: "increase",
-    description: "vs. last month"
-  },
-  {
-    title: "Average Margin",
-    value: "38.2%",
-    change: "-1.8%",
-    changeType: "decrease",
-    description: "vs. last month"
-  },
-  {
-    title: "Active Experiments",
-    value: "3",
-    change: "+1",
-    changeType: "increase",
-    description: "vs. last week"
-  },
-  {
-    title: "Price Adjustments",
-    value: "1,482",
-    change: "+21%",
-    changeType: "increase",
-    description: "in last 24h"
-  }
-];
-
-const revenueData = [
-  { date: 'Jan', optimized: 400000, baseline: 240000 },
-  { date: 'Feb', optimized: 300000, baseline: 139800 },
-  { date: 'Mar', optimized: 520000, baseline: 380000 },
-  { date: 'Apr', optimized: 478000, baseline: 390800 },
-  { date: 'May', optimized: 690000, baseline: 480000 },
-  { date: 'Jun', optimized: 539000, baseline: 380000 },
-  { date: 'Jul', optimized: 649000, baseline: 430000 },
-];
-
+import { useMemo } from 'react';
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+
   const experimentsQuery = useMemoFirebase(() => collection(firestore, 'experiments'), [firestore]);
-  const { data: experiments, isLoading } = useCollection<Experiment>(experimentsQuery);
+  const { data: experiments, isLoading: isLoadingExperiments } = useCollection<Experiment>(experimentsQuery);
+
+  const productsQuery = useMemoFirebase(() => collection(firestore, 'products'), [firestore]);
+  const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
 
   const activeExperiments = experiments?.filter(e => e.status === 'active') ?? [];
+
+  const kpis: Kpi[] = useMemo(() => {
+    if (!products) return [
+      { title: "Total Revenue", value: "₹0", change: "0%", changeType: "neutral", description: "vs. last month" },
+      { title: "Average Margin", value: "0%", change: "0%", changeType: "neutral", description: "vs. last month" },
+      { title: "Active Experiments", value: "0", change: "0", changeType: "neutral", description: "vs. last week" },
+      { title: "Price Adjustments", value: "0", change: "0%", changeType: "neutral", description: "in last 24h" }
+    ];
+
+    const totalRevenue = products.reduce((acc, product) => acc + (product.salesLast30d * product.currentPrice), 0);
+    const avgMargin = products.length > 0
+      ? products.reduce((acc, product) => acc + ((product.currentPrice - product.cost) / product.currentPrice) * 100, 0) / products.length
+      : 0;
+
+    return [
+      {
+        title: "Total Revenue",
+        value: `₹${(totalRevenue / 1000).toFixed(1)}k`, // Simple formatting
+        change: "0%", // No history yet
+        changeType: "neutral",
+        description: "calculated from 30d sales"
+      },
+      {
+        title: "Average Margin",
+        value: `${avgMargin.toFixed(1)}%`,
+        change: "0%",
+        changeType: "neutral",
+        description: "across all products"
+      },
+      {
+        title: "Active Experiments",
+        value: activeExperiments.length.toString(),
+        change: "0",
+        changeType: "neutral",
+        description: "currently running"
+      },
+      {
+        title: "Price Adjustments",
+        value: "0", // Not tracked yet
+        change: "0%",
+        changeType: "neutral",
+        description: "in last 24h"
+      }
+    ];
+  }, [products, activeExperiments.length]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -95,7 +102,11 @@ export default function DashboardPage() {
               <CardDescription>Optimized vs. Baseline Revenue</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <RevenueChart data={revenueData} />
+              {/* Empty chart data for now as requested */}
+              <RevenueChart data={[]} />
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                No revenue data available yet. Add products and track sales to see performance.
+              </p>
             </CardContent>
           </Card>
           <Card className="lg:col-span-3">
@@ -104,7 +115,7 @@ export default function DashboardPage() {
               <CardDescription>Ongoing price optimization tests.</CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading ? <p>Loading experiments...</p> : (
+              {isLoadingExperiments ? <p>Loading experiments...</p> : (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -114,18 +125,26 @@ export default function DashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {activeExperiments.map((exp) => (
-                      <TableRow key={exp.id}>
-                        <TableCell className="font-medium">{exp.name}</TableCell>
-                        <TableCell>
-                          <Badge variant={'outline'} className="bg-yellow-400/20 text-yellow-600 hover:bg-yellow-400/30">
-                            <Clock className="mr-1 h-3 w-3" />
-                            {exp.status}
-                          </Badge>
+                    {activeExperiments.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">
+                          No active experiments
                         </TableCell>
-                        <TableCell className="text-right">{exp.endDate}</TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      activeExperiments.map((exp) => (
+                        <TableRow key={exp.id}>
+                          <TableCell className="font-medium">{exp.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={'outline'} className="bg-yellow-400/20 text-yellow-600 hover:bg-yellow-400/30">
+                              <Clock className="mr-1 h-3 w-3" />
+                              {exp.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">{exp.endDate}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               )}

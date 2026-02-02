@@ -50,7 +50,7 @@ export interface Kpi {
   title: string;
   value: string;
   change: string;
-  changeType: 'increase' | 'decrease';
+  changeType: 'increase' | 'decrease' | 'neutral';
   description: string;
 }
 

@@ -4,12 +4,15 @@ import type { Kpi } from '@/lib/types';
 
 export function KpiCard({ title, value, change, changeType, description }: Kpi) {
   const isIncrease = changeType === 'increase';
-  
+  const isNeutral = changeType === 'neutral';
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {isIncrease ? (
+        {isNeutral ? (
+          <div className="h-4 w-4" /> // Placeholder or a flat icon
+        ) : isIncrease ? (
           <ArrowUpRight className="h-4 w-4 text-green-500" />
         ) : (
           <ArrowDownRight className="h-4 w-4 text-red-500" />
@@ -18,7 +21,7 @@ export function KpiCard({ title, value, change, changeType, description }: Kpi) 
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
         <p className="text-xs text-muted-foreground">
-          <span className={isIncrease ? 'text-green-500' : 'text-red-500'}>{change}</span>
+          <span className={isNeutral ? 'text-muted-foreground' : isIncrease ? 'text-green-500' : 'text-red-500'}>{change}</span>
           {' '}{description}
         </p>
       </CardContent>
