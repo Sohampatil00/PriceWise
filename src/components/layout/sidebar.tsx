@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons/logo';
 import {
@@ -20,7 +21,13 @@ import {
   Shield,
   Map,
   TrendingUp,
+  LogOut,
 } from 'lucide-react';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Button } from '../ui/button';
+import { Skeleton } from '../ui/skeleton';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,6 +41,12 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+  };
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left">
@@ -62,8 +75,33 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        {/* User-specific elements removed */}
+      <SidebarFooter className="flex-col items-start gap-2 p-3">
+        <SidebarSeparator />
+         {isUserLoading ? (
+          <div className="flex w-full items-center gap-2">
+            <Skeleton className="size-8 rounded-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        ) : user ? (
+          <div className="flex w-full min-w-0 items-center gap-2">
+            <Avatar className="size-8">
+              <AvatarImage src={user.photoURL ?? undefined} alt={user.displayName ?? 'User'} />
+              <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+              <p className="truncate text-sm font-medium">{user.displayName}</p>
+              <p className="truncate text-xs text-sidebar-foreground/70">{user.email}</p>
+            </div>
+             <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden"
+              onClick={handleSignOut}
+            >
+              <LogOut className="size-4" />
+            </Button>
+          </div>
+        ) : null}
       </SidebarFooter>
     </Sidebar>
   );
