@@ -1,178 +1,52 @@
-/**
- * @file firestore.rules
- * @description Firestore Security Rules for the PriceWise e-commerce pricing optimization application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict, role-based security model that segregates access
- * between regular users and administrators. The primary goal is to protect the integrity
- * of product and pricing data by restricting all modifications to authenticated admins,
- * while allowing standard users to manage only their own profile information.
- *
- * Data Structure:
- * The data is organized into three distinct top-level collections:
- * 1. /products: Contains all product information and related subcollections for pricing,
- *    competitor data, and forecasts. This entire data tree is exclusively managed by admins.
- * 2. /userbase: Contains profile documents for standard, non-administrative users.
- * 3. /adminbase: Contains profile documents for administrative users. A user's existence
- *    in this collection grants them admin privileges across the system.
- *
- * Key Security Decisions:
- * - Admin vs. User Segregation: Storing admins and users in separate top-level collections
- *   (/adminbase and /userbase) provides a clear, secure, and performant way to check for
- *   administrative privileges without inspecting document fields.
- * - Admin-Only Product Management: All collections under the /products path, including
- *   subcollections for price history, competitor prices, and pricing rules, are strictly
- *   limited to admin access for all read and write operations.
- * - Strict User Data Privacy: Users can only create, read, update, or delete their own
- *   document within the /userbase collection. Listing users is explicitly disallowed to
- *   prevent user enumeration and protect privacy.
- * - Relational Integrity: On creation, documents in subcollections (e.g., priceHistory)
- *   must contain a 'productId' that matches the parent product document in the path. This
- *   field is enforced as immutable to prevent data from being moved or orphaned.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --------------------------------------------------------------------------------
-    // Helper Functions
-    // --------------------------------------------------------------------------------
+    // Public read access for all data needed by the UI.
+    // Writes are disabled as there is no authentication model.
 
-    /**
-     * Checks if the user is authenticated.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * Checks if the authenticated user's UID matches the provided userId.
-     * This is the foundation of the user-ownership model.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * Checks if the authenticated user is an administrator.
-     * Admin status is determined by the existence of a document for the user
-     * in the /adminbase collection.
-     */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/adminbase/$(request.auth.uid));
-    }
-
-    // --------------------------------------------------------------------------------
-    // User & Admin Profile Collections
-    // --------------------------------------------------------------------------------
-
-    /**
-     * @description Manages user profile documents.
-     * @path /userbase/{userId}
-     * @allow (create) An authenticated user creating their own profile document for the first time.
-     * @deny (get) A user trying to read another user's profile.
-     * @principle Restricts access to a user's own data tree and enforces document ownership.
-     */
-    match /userbase/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // Disallow user enumeration for security and privacy.
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Manages administrator profile documents.
-     * @path /adminbase/{adminId}
-     * @allow (create) An authenticated user (who will be an admin) creating their own profile document.
-     * @deny (update) An admin trying to modify another admin's profile.
-     * @principle Restricts access to an admin's own data tree and enforces document ownership.
-     */
-    match /adminbase/{adminId} {
-      allow get: if isOwner(adminId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if isOwner(adminId) && request.resource.data.id == adminId;
-      allow update: if isOwner(adminId) && resource != null && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(adminId) && resource != null;
-    }
-
-    // --------------------------------------------------------------------------------
-    // Product Data Collections (Admin Only)
-    // --------------------------------------------------------------------------------
-
-    /**
-     * @description Manages core product documents.
-     * @path /products/{productId}
-     * @allow (get, create, update, delete) Any authenticated admin accessing any product.
-     * @deny (get, create, update, delete) Any non-admin user trying to access product data.
-     * @principle Enforces role-based access control, restricting all operations to administrators.
-     */
     match /products/{productId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    /**
-     * @description Manages competitor pricing data for a specific product.
-     * @path /products/{productId}/competitorPrices/{competitorPriceId}
-     * @allow (create) An admin creating competitor price info, ensuring it's linked to the correct product.
-     * @deny (create) An admin trying to create a price record with a mismatched productId.
-     * @principle Enforces role-based access and validates relational integrity between documents.
-     */
     match /products/{productId}/competitorPrices/{competitorPriceId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    /**
-     * @description Manages the price change history for a specific product.
-     * @path /products/{productId}/priceHistory/{priceHistoryId}
-     * @allow (create) An admin creating a price history entry, ensuring it's linked to the correct product.
-     * @deny (update) An admin trying to change the productId of an existing price history entry.
-     * @principle Enforces role-based access and validates relational integrity between documents.
-     */
     match /products/{productId}/priceHistory/{priceHistoryId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    /**
-     * @description Manages the pricing rules for a specific product.
-     * @path /products/{productId}/pricingRules/{pricingRuleId}
-     * @allow (create) An admin creating a pricing rule, ensuring it's linked to the correct product.
-     * @deny (delete) A non-admin user trying to delete a pricing rule.
-     * @principle Enforces role-based access and validates relational integrity between documents.
-     */
     match /products/{productId}/pricingRules/{pricingRuleId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    /**
-     * @description Manages demand forecasts for a specific product.
-     * @path /products/{productId}/demandForecasts/{demandForecastId}
-     * @allow (create) An admin creating a demand forecast, ensuring it's linked to the correct product.
-     * @deny (get) A non-admin user trying to read a forecast.
-     * @principle Enforces role-based access and validates relational integrity between documents.
-     */
     match /products/{productId}/demandForecasts/{demandForecastId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-    /**
-     * @description Manages pricing experiments.
-     * @path /experiments/{experimentId}
-     * @allow (get, create, update, delete) Any authenticated admin.
-     * @principle Enforces role-based access control, restricting all operations to administrators.
-     */
-     match /experiments/{experimentId} {
-        allow get, list, create, update, delete: if isAdmin();
-     }
+    match /experiments/{experimentId} {
+       allow get, list: if true;
+       allow create, update, delete: if false;
+    }
 
-    /**
-     * @description Manages crisis/emergency events.
-     * @path /emergencyEvents/{eventId}
-     * @allow (get, list, create, update, delete) Any authenticated admin.
-     * @principle Only admins can manage emergency states.
-     */
-     match /emergencyEvents/{eventId} {
-        allow get, list, create, update, delete: if isAdmin();
-     }
+    match /emergencyEvents/{eventId} {
+       allow get, list: if true;
+       allow create, update, delete: if false;
+    }
+
+    // Auth-related collections are no longer used and are locked down.
+    match /userbase/{userId} {
+      allow read, write: if false;
+    }
+
+    match /adminbase/{adminId} {
+      allow read, write: if false;
+    }
   }
 }
