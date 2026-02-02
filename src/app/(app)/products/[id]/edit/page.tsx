@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,9 +35,10 @@ const productSchema = z.object({
   imageHint: z.string().optional(),
 });
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const firestore = useFirestore();
   const { toast } = useToast();
 
