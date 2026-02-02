@@ -218,6 +218,42 @@
         "variationRevenue",
         "isSignificant"
       ]
+    },
+    "EmergencyEvent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "EmergencyEvent",
+      "type": "object",
+      "description": "Represents an emergency event that can trigger special pricing rules.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the emergency event."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the emergency event (e.g., 'Monsoon Flood 2024')."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the emergency mode is currently active."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date and time of the emergency event.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date and time of the emergency event.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "isActive",
+        "startDate"
+      ]
     }
   },
   "auth": {
@@ -315,6 +351,22 @@
             {
               "name": "abTestId",
               "description": "Unique identifier for the A/B test."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/emergencyEvents/{eventId}",
+        "definition": {
+          "entityName": "EmergencyEvent",
+          "schema": {
+            "$ref": "#/backend/entities/EmergencyEvent"
+          },
+          "description": "Stores emergency event data which can trigger crisis pricing modes.",
+          "params": [
+            {
+              "name": "eventId",
+              "description": "Unique identifier for the emergency event."
             }
           ]
         }
