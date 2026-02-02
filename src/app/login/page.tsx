@@ -20,7 +20,11 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
 
   if (isUserLoading) {
-    return <p>Loading...</p>
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
   }
   
   if (user) {
@@ -43,47 +47,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <form onSubmit={handleLogin}>
-        <Card>
-          <CardHeader className="text-center">
-             <div className="flex justify-center items-center mb-4">
-                <Logo className="size-12 text-primary" />
-             </div>
-            <CardTitle className="font-headline text-2xl">Welcome Back, Admin</CardTitle>
-            <CardDescription>Sign in to access the PriceWise dashboard.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@pricewise.co"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
+    <div className="flex min-h-screen w-full items-center justify-center">
+        <div className="w-full max-w-md">
+          <form onSubmit={handleLogin}>
+            <Card>
+              <CardHeader className="text-center">
+                <div className="flex justify-center items-center mb-4">
+                    <Logo className="size-12 text-primary" />
+                </div>
+                <CardTitle className="font-headline text-2xl">Welcome Back, Admin</CardTitle>
+                <CardDescription>Sign in to access the PriceWise dashboard.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@pricewise.co"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
+              </CardContent>
+              <CardFooter>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </CardFooter>
+            </Card>
+          </form>
+        </div>
     </div>
   );
 }
