@@ -1,4 +1,5 @@
 'use client';
+import { use } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Header } from '@/components/layout/header';
@@ -13,15 +14,16 @@ import type { Product, CompetitorPrice, PriceHistory } from '@/lib/types';
 import { useMemoFirebase } from '@/firebase/provider';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
+  const { id } = use(params as any);
   const firestore = useFirestore();
 
-  const productRef = useMemoFirebase(() => doc(firestore, 'products', params.id), [firestore, params.id]);
+  const productRef = useMemoFirebase(() => doc(firestore, 'products', id), [firestore, id]);
   const { data: product, isLoading: isProductLoading } = useDoc<Product>(productRef);
 
-  const competitorsQuery = useMemoFirebase(() => product ? collection(firestore, 'products', params.id, 'competitorPrices') : null, [product, firestore, params.id]);
+  const competitorsQuery = useMemoFirebase(() => product ? collection(firestore, 'products', id, 'competitorPrices') : null, [product, firestore, id]);
   const { data: productCompetitors, isLoading: areCompetitorsLoading } = useCollection<CompetitorPrice>(competitorsQuery);
 
-  const priceHistoryQuery = useMemoFirebase(() => product ? collection(firestore, 'products', params.id, 'priceHistory') : null, [product, firestore, params.id]);
+  const priceHistoryQuery = useMemoFirebase(() => product ? collection(firestore, 'products', id, 'priceHistory') : null, [product, firestore, id]);
   const { data: priceHistory, isLoading: isHistoryLoading } = useCollection<PriceHistory>(priceHistoryQuery);
 
   if (isProductLoading || areCompetitorsLoading || isHistoryLoading) {

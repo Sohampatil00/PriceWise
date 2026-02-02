@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { updateDocumentNonBlocking } from '@/firebase';
 import { useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { useEffect } from 'react';
+import { useEffect, use } from 'react';
 
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ const productSchema = z.object({
 
 export default function EditProductPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { id } = params;
+  const { id } = use(params as any);
   const firestore = useFirestore();
   const { toast } = useToast();
 
